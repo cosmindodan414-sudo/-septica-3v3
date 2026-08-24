@@ -38,7 +38,8 @@ body{
 }
 
 button,
-input{
+input,
+select{
   font-family:inherit;
 }
 
@@ -46,9 +47,13 @@ button{
   cursor:pointer;
 }
 
-/* =========================
-   LOBBY
-========================= */
+.panel{
+  background:#071019ef;
+  border:1px solid #ffffff20;
+  border-radius:14px;
+}
+
+/* LOBBY */
 
 #lobby{
   width:min(92%,440px);
@@ -95,7 +100,6 @@ button{
 
 .teamChoice button.selected{
   border-color:#ffd642;
-  box-shadow:0 0 12px #ffd64288;
 }
 
 .mainButton{
@@ -118,18 +122,10 @@ button{
   color:#ff8888;
 }
 
-/* =========================
-   TOP
-========================= */
+/* TOP */
 
 #game{
   padding:10px;
-}
-
-.panel{
-  background:#071019ef;
-  border:1px solid #ffffff20;
-  border-radius:14px;
 }
 
 .top{
@@ -183,20 +179,19 @@ button{
   align-items:center;
   justify-content:center;
   color:#ffd642;
-  font-weight:bold;
 }
 
-/* =========================
-   GAME LAYOUT
-========================= */
+/* LAYOUT */
 
 .layout{
   max-width:1450px;
   margin:10px auto;
   display:grid;
-  grid-template-columns:1fr 280px;
+  grid-template-columns:1fr 285px;
   gap:10px;
 }
+
+/* TABLE */
 
 .tableZone{
   position:relative;
@@ -228,9 +223,7 @@ button{
     0 25px 50px #000b;
 }
 
-/* =========================
-   PLAYERS
-========================= */
+/* PLAYERS */
 
 .player{
   position:absolute;
@@ -249,6 +242,12 @@ button{
   filter:
     drop-shadow(0 0 8px #aaff30)
     drop-shadow(0 0 18px #86ff00);
+}
+
+.player.speaking .avatar{
+  filter:
+    drop-shadow(0 0 8px #36e6ff)
+    drop-shadow(0 0 22px #36e6ff);
 }
 
 .playerName{
@@ -275,6 +274,15 @@ button{
   background:#17478d;
 }
 
+.voiceBadge{
+  display:inline-block;
+  margin:3px;
+  padding:3px 6px;
+  border-radius:8px;
+  background:#111c;
+  font-size:13px;
+}
+
 .kick{
   margin-top:4px;
   padding:5px;
@@ -291,9 +299,49 @@ button{
 .p4{left:43%;bottom:-11%}
 .p5{left:4%;bottom:3%}
 
-/* =========================
-   CARDS
-========================= */
+/* EMOJI */
+
+.playerEmoji{
+  position:absolute;
+  left:50%;
+  top:-20px;
+  transform:translateX(-50%);
+  z-index:100;
+  font-size:46px;
+  pointer-events:none;
+  animation:emojiPop 3s ease forwards;
+}
+
+@keyframes emojiPop{
+
+  0%{
+    opacity:0;
+    transform:
+      translate(-50%,25px)
+      scale(.4);
+  }
+
+  15%{
+    opacity:1;
+    transform:
+      translate(-50%,0)
+      scale(1.3);
+  }
+
+  70%{
+    opacity:1;
+    transform:
+      translate(-50%,-20px);
+  }
+
+  100%{
+    opacity:0;
+    transform:
+      translate(-50%,-55px);
+  }
+}
+
+/* TABLE CARDS */
 
 .centerCards{
   position:absolute;
@@ -311,12 +359,13 @@ button{
   gap:7px;
 }
 
+/* CARD */
+
 .card{
   position:relative;
 
   width:82px;
   height:120px;
-
   flex:0 0 82px;
 
   border-radius:9px;
@@ -363,8 +412,6 @@ button{
   font-weight:bold;
 }
 
-/* cărțile mesei sunt mai mici */
-
 .centerCards .card{
   width:57px;
   height:84px;
@@ -383,9 +430,7 @@ button{
   font-size:14px;
 }
 
-/* =========================
-   HAND
-========================= */
+/* HAND */
 
 .handPanel{
   padding:10px;
@@ -404,6 +449,10 @@ button{
   cursor:pointer;
 }
 
+.canPlay:active{
+  transform:translateY(-8px);
+}
+
 .disabled{
   opacity:.55;
   pointer-events:none;
@@ -413,11 +462,10 @@ button{
   margin-bottom:8px;
   color:#ffd642;
   font-weight:bold;
+  font-size:19px;
 }
 
-/* =========================
-   BUTTONS
-========================= */
+/* BUTTONS */
 
 .controls{
   display:flex;
@@ -459,15 +507,68 @@ button{
   background:#17478d;
 }
 
+.mic{
+  background:#2867ad;
+}
+
+.report{
+  background:#a82c2c;
+}
+
 .result{
   padding:8px;
   color:#ffd642;
   font-weight:bold;
 }
 
-/* =========================
-   RIGHT
-========================= */
+/* EMOJI BAR */
+
+.emojiBar{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:6px;
+  margin:10px 0;
+}
+
+.emojiButton{
+  width:42px;
+  height:42px;
+  border:1px solid #ffffff20;
+  border-radius:10px;
+  background:#ffffff12;
+  font-size:23px;
+}
+
+/* REPORT */
+
+.reportBox{
+  margin:8px auto;
+  max-width:420px;
+  padding:10px;
+  border:1px solid #a82c2c88;
+  border-radius:10px;
+  background:#2a0b0bd9;
+}
+
+.reportBox select{
+  width:100%;
+  margin:6px 0;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #ffffff22;
+  background:#161616;
+  color:white;
+  font-size:16px;
+}
+
+.warning{
+  font-size:12px;
+  color:#ffb1b1;
+  line-height:1.4;
+}
+
+/* SIDE */
 
 .side{
   padding:10px;
@@ -501,12 +602,10 @@ button{
   display:block;
 }
 
-/* =========================
-   CHAT
-========================= */
+/* CHAT */
 
 #chatMessages{
-  height:260px;
+  height:240px;
   overflow-y:auto;
   background:#02070680;
   border-radius:10px;
@@ -551,12 +650,10 @@ button{
   padding:8px;
 }
 
-/* =========================
-   HISTORY
-========================= */
+/* HISTORY */
 
 #history{
-  max-height:360px;
+  max-height:350px;
   overflow-y:auto;
 }
 
@@ -578,14 +675,18 @@ button{
   line-height:1.5;
 }
 
-/* =========================
-   MOBILE
-========================= */
+.cheatHistory{
+  border:1px solid #e64a4a88;
+  background:#351010;
+}
+
+/* MOBILE */
 
 @media(max-width:850px){
 
   .top{
-    grid-template-columns:95px 1fr 55px;
+    grid-template-columns:
+      95px 1fr 55px;
   }
 
   .room{
@@ -606,10 +707,6 @@ button{
   }
 
   .cardPoints{
-    font-size:9px;
-  }
-
-  .host{
     font-size:9px;
   }
 
@@ -641,7 +738,8 @@ button{
     font-size:10px;
   }
 
-  .teamTag{
+  .teamTag,
+  .voiceBadge{
     font-size:8px;
   }
 
@@ -699,7 +797,6 @@ button{
   .side{
     margin-top:10px;
   }
-
 }
 
 </style>
@@ -713,10 +810,6 @@ button{
 <div id="lobby">
 
 <h1>🃏 Șeptică 3v3</h1>
-
-<p>
-Alege echipa înainte să intri.
-</p>
 
 <input
   id="name"
@@ -732,6 +825,8 @@ Alege echipa înainte să intri.
   onclick="chooseTeam(1)"
 >
 Echipa 1
+<br>
+<small>J1 • J3 • J5</small>
 </button>
 
 <button
@@ -740,6 +835,8 @@ Echipa 1
   onclick="chooseTeam(2)"
 >
 Echipa 2
+<br>
+<small>J2 • J4 • J6</small>
 </button>
 
 </div>
@@ -769,7 +866,6 @@ Intră în cameră
 
 </div>
 
-
 <!-- GAME -->
 
 <div
@@ -780,10 +876,13 @@ Intră în cameră
 <div class="top">
 
 <div class="room panel">
+
 Cod
+
 <span id="roomCode">
 ------
 </span>
+
 </div>
 
 <div class="panel">
@@ -801,9 +900,7 @@ ECHIPA 1
 0
 </span>
 
-<span>
--
-</span>
+<span>-</span>
 
 <span
   id="matchScore2"
@@ -821,15 +918,9 @@ ECHIPA 2
 <div class="cardPoints">
 
 Puncte 10/A:
-<strong id="points1">
-0
-</strong>
-
+<strong id="points1">0</strong>
 -
-
-<strong id="points2">
-0
-</strong>
+<strong id="points2">0</strong>
 
 </div>
 
@@ -843,7 +934,6 @@ Puncte 10/A:
 </div>
 
 </div>
-
 
 <div class="layout">
 
@@ -863,7 +953,6 @@ Puncte 10/A:
 </div>
 
 </div>
-
 
 <div class="handPanel panel">
 
@@ -897,7 +986,6 @@ Așteptăm...
 
 </div>
 
-
 <div
   id="teamControls"
   class="controls"
@@ -907,18 +995,17 @@ Așteptăm...
   class="action change1"
   onclick="changeTeam(1)"
 >
-Echipa 1
+🟢 Echipa 1
 </button>
 
 <button
   class="action change2"
   onclick="changeTeam(2)"
 >
-Echipa 2
+🔵 Echipa 2
 </button>
 
 </div>
-
 
 <div class="controls">
 
@@ -927,7 +1014,7 @@ Echipa 2
   class="action bot hidden"
   onclick="fillWithBots()"
 >
-🤖 Test boți
+🤖 Test cu boți
 </button>
 
 <button
@@ -940,12 +1027,92 @@ Echipa 2
 
 </div>
 
+<!-- MICROFON -->
+
+<div class="controls">
+
+<button
+  id="micButton"
+  class="action mic"
+  onclick="toggleMicrophone()"
+>
+🎤 Pornește microfonul
+</button>
+
+<button
+  id="reportButton"
+  class="action report hidden"
+  onclick="toggleReportBox()"
+>
+🚩 Raportează trișare
+</button>
+
+</div>
+
+<div
+  id="reportBox"
+  class="reportBox hidden"
+>
+
+<strong>
+🚩 Raportează echipa adversă
+</strong>
+
+<p class="warning">
+Folosește raportarea doar dacă adversarii spun ce cărți au sau coordonează cărțile prin voce. Două rapoarte diferite duc la pierderea partidei pentru echipa raportată.
+</p>
+
+<select id="reportReason">
+
+<option>
+A spus ce cărți are
+</option>
+
+<option>
+I-a spus colegului ce să joace
+</option>
+
+<option>
+A coordonat jocul prin voce
+</option>
+
+<option>
+Altă trișare
+</option>
+
+</select>
+
+<button
+  class="action report"
+  onclick="submitCheatingReport()"
+>
+Confirmă raportul
+</button>
+
+</div>
+
 <div id="hand"></div>
 
+<!-- EMOJI -->
+
+<div class="emojiBar">
+
+<button class="emojiButton" onclick="sendEmoji('😂')">😂</button>
+<button class="emojiButton" onclick="sendEmoji('❤️')">❤️</button>
+<button class="emojiButton" onclick="sendEmoji('😡')">😡</button>
+<button class="emojiButton" onclick="sendEmoji('😭')">😭</button>
+<button class="emojiButton" onclick="sendEmoji('👍')">👍</button>
+<button class="emojiButton" onclick="sendEmoji('👎')">👎</button>
+<button class="emojiButton" onclick="sendEmoji('🔥')">🔥</button>
+<button class="emojiButton" onclick="sendEmoji('👏')">👏</button>
+
+</div>
+
 </div>
 
 </div>
 
+<!-- SIDE -->
 
 <div class="side panel">
 
@@ -968,7 +1135,6 @@ Echipa 2
 </button>
 
 </div>
-
 
 <div
   id="chatPage"
@@ -1000,7 +1166,6 @@ Trimite
 
 </div>
 
-
 <div
   id="historyPage"
   class="tabPage"
@@ -1009,7 +1174,6 @@ Trimite
 <div id="history"></div>
 
 </div>
-
 
 <div
   style="
@@ -1021,36 +1185,24 @@ Trimite
 
 <div>
 Runda:
-<strong id="roundNumber">
-1
-</strong>
+<strong id="roundNumber">1</strong>
 </div>
 
 <div>
 Prima carte:
-<strong id="firstCard">
--
-</strong>
+<strong id="firstCard">-</strong>
 </div>
 
 <div>
 Tăieri:
-<strong id="cuts">
-7 și 8
-</strong>
+<strong id="cuts">7 și 8</strong>
 </div>
 
 <div>
 Grămezi:
-E1
-<strong id="piles1">
-0
-</strong>
+E1 <strong id="piles1">0</strong>
 -
-E2
-<strong id="piles2">
-0
-</strong>
+E2 <strong id="piles2">0</strong>
 </div>
 
 <div
@@ -1069,28 +1221,54 @@ E2
 
 </div>
 
+<div id="remoteAudio"></div>
 
 <script src="/socket.io/socket.io.js"></script>
 
 <script>
 
-const socket =
-  io();
+const socket = io();
 
-let roomCode =
-  null;
+let roomCode = null;
+let mySeat = null;
+let state = null;
+let hand = [];
 
-let mySeat =
-  null;
+let chosenTeam = null;
 
-let state =
-  null;
+let reportUsed = false;
+let lastGameId = null;
 
-let hand =
-  [];
+/* =========================
+   VOICE
+========================= */
 
-let chosenTeam =
-  null;
+let localStream = null;
+let micEnabled = false;
+
+const peers =
+  new Map();
+
+const audioElements =
+  new Map();
+
+let audioContext = null;
+let analyser = null;
+let speakingLoop = null;
+let lastSpeaking = false;
+
+const rtcConfig = {
+  iceServers: [
+    {
+      urls:
+        "stun:stun.l.google.com:19302"
+    }
+  ]
+};
+
+/* =========================
+   AVATARS
+========================= */
 
 const avatars = [
   "/player1.png",
@@ -1107,13 +1285,12 @@ function e(id){
 }
 
 /* =========================
-   TEAM CHOICE
+   TEAM
 ========================= */
 
 function chooseTeam(team){
 
-  chosenTeam =
-    team;
+  chosenTeam = team;
 
   e("chooseTeam1")
     .classList
@@ -1135,9 +1312,7 @@ function changeTeam(team){
   socket.emit(
     "changeTeam",
     {
-      code:
-        roomCode,
-
+      code: roomCode,
       team
     },
     response=>{
@@ -1161,7 +1336,7 @@ function createRoom(){
 
   if(!chosenTeam){
     return showError(
-      "Alege Echipa 1 sau Echipa 2."
+      "Alege o echipă."
     );
   }
 
@@ -1178,9 +1353,7 @@ function createRoom(){
     },
     response=>{
 
-      if(
-        !response.ok
-      ){
+      if(!response.ok){
         return showError(
           response.error
         );
@@ -1198,7 +1371,7 @@ function joinRoom(){
 
   if(!chosenTeam){
     return showError(
-      "Alege Echipa 1 sau Echipa 2."
+      "Alege o echipă."
     );
   }
 
@@ -1220,9 +1393,7 @@ function joinRoom(){
     },
     response=>{
 
-      if(
-        !response.ok
-      ){
+      if(!response.ok){
         return showError(
           response.error
         );
@@ -1241,23 +1412,16 @@ function enter(
   seat
 ){
 
-  roomCode =
-    code;
-
-  mySeat =
-    seat;
+  roomCode = code;
+  mySeat = seat;
 
   e("lobby")
     .classList
-    .add(
-      "hidden"
-    );
+    .add("hidden");
 
   e("game")
     .classList
-    .remove(
-      "hidden"
-    );
+    .remove("hidden");
 
   e("roomCode")
     .textContent =
@@ -1268,8 +1432,7 @@ socket.on(
   "seat",
   seat=>{
 
-    mySeat =
-      seat;
+    mySeat = seat;
 
     render();
   }
@@ -1289,9 +1452,7 @@ function fillWithBots(){
     },
     response=>{
 
-      if(
-        !response.ok
-      ){
+      if(!response.ok){
         alert(
           response.error
         );
@@ -1310,9 +1471,7 @@ function startGame(){
     },
     response=>{
 
-      if(
-        !response.ok
-      ){
+      if(!response.ok){
         alert(
           response.error
         );
@@ -1331,9 +1490,7 @@ function continueRound(){
     },
     response=>{
 
-      if(
-        !response.ok
-      ){
+      if(!response.ok){
         alert(
           response.error
         );
@@ -1352,9 +1509,7 @@ function stopRound(){
     },
     response=>{
 
-      if(
-        !response.ok
-      ){
+      if(!response.ok){
         alert(
           response.error
         );
@@ -1375,9 +1530,7 @@ function playCard(index){
     },
     response=>{
 
-      if(
-        !response.ok
-      ){
+      if(!response.ok){
         alert(
           response.error
         );
@@ -1387,21 +1540,801 @@ function playCard(index){
 }
 
 /* =========================
+   REPORT
+========================= */
+
+function toggleReportBox(){
+
+  e("reportBox")
+    .classList
+    .toggle(
+      "hidden"
+    );
+}
+
+function submitCheatingReport(){
+
+  if(
+    reportUsed
+  ){
+    alert(
+      "Ai raportat deja în această partidă."
+    );
+
+    return;
+  }
+
+  const reason =
+    e("reportReason")
+      .value;
+
+  const confirmed =
+    confirm(
+      "Confirmi raportul de trișare? Folosește această funcție doar dacă echipa adversă trișează."
+    );
+
+  if(
+    !confirmed
+  ){
+    return;
+  }
+
+  socket.emit(
+    "reportCheating",
+    {
+      code:
+        roomCode,
+
+      reason
+    },
+    response=>{
+
+      if(
+        !response.ok
+      ){
+        alert(
+          response.error
+        );
+
+        return;
+      }
+
+      reportUsed = true;
+
+      e("reportBox")
+        .classList
+        .add(
+          "hidden"
+        );
+
+      e("reportButton")
+        .textContent =
+        "🚩 Raport trimis";
+
+      alert(
+        response.forfeit
+          ? "Echipa adversă a pierdut partida pentru trișare."
+          : "Raportul a fost trimis."
+      );
+    }
+  );
+}
+
+socket.on(
+  "cheatingConfirmed",
+  data=>{
+
+    alert(
+      `🚩 Echipa ${data.cheatingTeam} pierde partida pentru trișare. Echipa ${data.winnerTeam} primește victoria.`
+    );
+  }
+);
+
+/* =========================
+   MICROPHONE
+========================= */
+
+async function toggleMicrophone(){
+
+  if(
+    micEnabled
+  ){
+    stopMicrophone();
+    return;
+  }
+
+  try{
+
+    localStream =
+      await navigator.mediaDevices
+        .getUserMedia({
+          audio: true
+        });
+
+    micEnabled = true;
+
+    e("micButton")
+      .textContent =
+      "🔇 Oprește microfonul";
+
+    startSpeakingDetector();
+
+    socket.emit(
+      "voiceReady",
+      {
+        code:
+          roomCode
+      },
+      async response=>{
+
+        if(
+          !response.ok
+        ){
+          alert(
+            response.error
+          );
+
+          stopMicrophone();
+
+          return;
+        }
+
+        for(
+          const peer
+          of response.peers
+        ){
+          await createPeer(
+            peer.socketId,
+            true
+          );
+        }
+      }
+    );
+
+  }catch(error){
+
+    alert(
+      "Nu am primit acces la microfon. Verifică permisiunea browserului."
+    );
+  }
+}
+
+function stopMicrophone(){
+
+  micEnabled = false;
+
+  if(
+    localStream
+  ){
+    localStream
+      .getTracks()
+      .forEach(
+        track=>
+          track.stop()
+      );
+  }
+
+  localStream = null;
+
+  for(
+    const pc
+    of peers.values()
+  ){
+    pc.close();
+  }
+
+  peers.clear();
+
+  for(
+    const audio
+    of audioElements.values()
+  ){
+    audio.remove();
+  }
+
+  audioElements.clear();
+
+  stopSpeakingDetector();
+
+  e("micButton")
+    .textContent =
+    "🎤 Pornește microfonul";
+
+  socket.emit(
+    "voiceStopped",
+    {
+      code:
+        roomCode
+    }
+  );
+}
+
+async function createPeer(
+  peerId,
+  initiator
+){
+
+  if(
+    peers.has(
+      peerId
+    )
+  ){
+    return peers.get(
+      peerId
+    );
+  }
+
+  const pc =
+    new RTCPeerConnection(
+      rtcConfig
+    );
+
+  peers.set(
+    peerId,
+    pc
+  );
+
+  if(
+    localStream
+  ){
+    for(
+      const track
+      of localStream.getTracks()
+    ){
+      pc.addTrack(
+        track,
+        localStream
+      );
+    }
+  }
+
+  pc.onicecandidate =
+    event=>{
+
+      if(
+        event.candidate
+      ){
+        socket.emit(
+          "webrtcSignal",
+          {
+            code:
+              roomCode,
+
+            target:
+              peerId,
+
+            data:{
+              candidate:
+                event.candidate
+            }
+          }
+        );
+      }
+    };
+
+  pc.ontrack =
+    event=>{
+
+      let audio =
+        audioElements.get(
+          peerId
+        );
+
+      if(
+        !audio
+      ){
+        audio =
+          document.createElement(
+            "audio"
+          );
+
+        audio.autoplay =
+          true;
+
+        audio.playsInline =
+          true;
+
+        e("remoteAudio")
+          .appendChild(
+            audio
+          );
+
+        audioElements.set(
+          peerId,
+          audio
+        );
+      }
+
+      audio.srcObject =
+        event.streams[0];
+
+      audio
+        .play()
+        .catch(
+          ()=>{}
+        );
+    };
+
+  pc.onconnectionstatechange =
+    ()=>{
+
+      if(
+        [
+          "failed",
+          "closed"
+        ].includes(
+          pc.connectionState
+        )
+      ){
+        closePeer(
+          peerId
+        );
+      }
+    };
+
+  if(
+    initiator
+  ){
+    const offer =
+      await pc.createOffer();
+
+    await pc
+      .setLocalDescription(
+        offer
+      );
+
+    socket.emit(
+      "webrtcSignal",
+      {
+        code:
+          roomCode,
+
+        target:
+          peerId,
+
+        data:{
+          description:
+            pc.localDescription
+        }
+      }
+    );
+  }
+
+  return pc;
+}
+
+function closePeer(
+  peerId
+){
+
+  const pc =
+    peers.get(
+      peerId
+    );
+
+  if(
+    pc
+  ){
+    pc.close();
+    peers.delete(
+      peerId
+    );
+  }
+
+  const audio =
+    audioElements.get(
+      peerId
+    );
+
+  if(
+    audio
+  ){
+    audio.remove();
+
+    audioElements.delete(
+      peerId
+    );
+  }
+}
+
+socket.on(
+  "voicePeerAvailable",
+  async peer=>{
+
+    if(
+      !micEnabled
+    ){
+      return;
+    }
+
+    /*
+    Cel nou va primi lista celor
+    existenți și va crea oferta.
+    Noi doar așteptăm oferta lui.
+    */
+
+  }
+);
+
+socket.on(
+  "voicePeerStopped",
+  data=>{
+
+    closePeer(
+      data.socketId
+    );
+  }
+);
+
+socket.on(
+  "webrtcSignal",
+  async payload=>{
+
+    if(
+      !micEnabled
+    ){
+      return;
+    }
+
+    const from =
+      payload.from;
+
+    let pc =
+      peers.get(
+        from
+      );
+
+    if(
+      !pc
+    ){
+      pc =
+        await createPeer(
+          from,
+          false
+        );
+    }
+
+    const data =
+      payload.data;
+
+    try{
+
+      if(
+        data.description
+      ){
+
+        const description =
+          new RTCSessionDescription(
+            data.description
+          );
+
+        await pc
+          .setRemoteDescription(
+            description
+          );
+
+        if(
+          description.type ===
+          "offer"
+        ){
+
+          const answer =
+            await pc
+              .createAnswer();
+
+          await pc
+            .setLocalDescription(
+              answer
+            );
+
+          socket.emit(
+            "webrtcSignal",
+            {
+              code:
+                roomCode,
+
+              target:
+                from,
+
+              data:{
+                description:
+                  pc.localDescription
+              }
+            }
+          );
+        }
+      }
+
+      if(
+        data.candidate
+      ){
+
+        await pc
+          .addIceCandidate(
+            new RTCIceCandidate(
+              data.candidate
+            )
+          );
+      }
+
+    }catch(error){
+
+      console.error(
+        "WebRTC:",
+        error
+      );
+    }
+  }
+);
+
+/* =========================
+   SPEAKING DETECTOR
+========================= */
+
+function startSpeakingDetector(){
+
+  if(
+    !localStream
+  ){
+    return;
+  }
+
+  audioContext =
+    new (
+      window.AudioContext ||
+      window.webkitAudioContext
+    )();
+
+  const source =
+    audioContext
+      .createMediaStreamSource(
+        localStream
+      );
+
+  analyser =
+    audioContext
+      .createAnalyser();
+
+  analyser.fftSize =
+    512;
+
+  source.connect(
+    analyser
+  );
+
+  const buffer =
+    new Uint8Array(
+      analyser.fftSize
+    );
+
+  function check(){
+
+    if(
+      !micEnabled ||
+      !analyser
+    ){
+      return;
+    }
+
+    analyser
+      .getByteTimeDomainData(
+        buffer
+      );
+
+    let sum = 0;
+
+    for(
+      const value
+      of buffer
+    ){
+      const normalized =
+        (
+          value - 128
+        ) / 128;
+
+      sum +=
+        normalized *
+        normalized;
+    }
+
+    const rms =
+      Math.sqrt(
+        sum /
+        buffer.length
+      );
+
+    const speaking =
+      rms > 0.045;
+
+    if(
+      speaking !==
+      lastSpeaking
+    ){
+      lastSpeaking =
+        speaking;
+
+      socket.emit(
+        "voiceSpeaking",
+        {
+          code:
+            roomCode,
+
+          speaking
+        }
+      );
+    }
+
+    speakingLoop =
+      requestAnimationFrame(
+        check
+      );
+  }
+
+  check();
+}
+
+function stopSpeakingDetector(){
+
+  if(
+    speakingLoop
+  ){
+    cancelAnimationFrame(
+      speakingLoop
+    );
+  }
+
+  speakingLoop =
+    null;
+
+  if(
+    audioContext
+  ){
+    audioContext
+      .close()
+      .catch(
+        ()=>{}
+      );
+  }
+
+  audioContext =
+    null;
+
+  analyser =
+    null;
+
+  lastSpeaking =
+    false;
+}
+
+socket.on(
+  "voiceSpeaking",
+  data=>{
+
+    if(
+      state &&
+      state.players[
+        data.seat
+      ]
+    ){
+      state.players[
+        data.seat
+      ].speaking =
+        data.speaking;
+    }
+
+    const player =
+      document.querySelector(
+        `.p${data.seat}`
+      );
+
+    if(
+      player
+    ){
+      player.classList.toggle(
+        "speaking",
+        data.speaking
+      );
+
+      const badge =
+        player.querySelector(
+          ".voiceBadge"
+        );
+
+      if(
+        badge &&
+        state?.players[
+          data.seat
+        ]?.voiceEnabled
+      ){
+        badge.textContent =
+          data.speaking
+            ? "🔊 Vorbește"
+            : "🎤";
+      }
+    }
+  }
+);
+
+/* =========================
+   EMOJI
+========================= */
+
+function sendEmoji(
+  emoji
+){
+
+  socket.emit(
+    "sendEmoji",
+    {
+      code:
+        roomCode,
+
+      emoji
+    }
+  );
+}
+
+socket.on(
+  "playerEmoji",
+  data=>{
+
+    const box =
+      document.querySelector(
+        `.p${data.seat}`
+      );
+
+    if(!box){
+      return;
+    }
+
+    const old =
+      box.querySelector(
+        ".playerEmoji"
+      );
+
+    if(old){
+      old.remove();
+    }
+
+    const element =
+      document.createElement(
+        "div"
+      );
+
+    element.className =
+      "playerEmoji";
+
+    element.textContent =
+      data.emoji;
+
+    box.appendChild(
+      element
+    );
+
+    setTimeout(
+      ()=>{
+        element.remove();
+      },
+      3000
+    );
+  }
+);
+
+/* =========================
    KICK
 ========================= */
 
-function kickPlayer(seat){
+function kickPlayer(
+  seat
+){
 
   const player =
     state.players[
       seat
     ];
 
-  if(!player){
-    return;
-  }
-
   if(
+    !player ||
     !confirm(
       `Dai afară pe ${player.name}?`
     )
@@ -1419,9 +2352,7 @@ function kickPlayer(seat){
     },
     response=>{
 
-      if(
-        !response.ok
-      ){
+      if(!response.ok){
         alert(
           response.error
         );
@@ -1433,6 +2364,8 @@ function kickPlayer(seat){
 socket.on(
   "kicked",
   ()=>{
+
+    stopMicrophone();
 
     alert(
       "Host-ul te-a dat afară."
@@ -1496,10 +2429,9 @@ socket.on(
   message=>{
 
     const box =
-      document
-        .createElement(
-          "div"
-        );
+      document.createElement(
+        "div"
+      );
 
     box.className =
       "chatMessage";
@@ -1518,20 +2450,6 @@ socket.on(
         .scrollHeight;
   }
 );
-
-function escapeHTML(value){
-
-  const div =
-    document
-      .createElement(
-        "div"
-      );
-
-  div.textContent =
-    String(value);
-
-  return div.innerHTML;
-}
 
 /* =========================
    TABS
@@ -1582,6 +2500,21 @@ socket.on(
 
     state =
       newState;
+
+    if(
+      lastGameId !==
+      state.gameId
+    ){
+      lastGameId =
+        state.gameId;
+
+      reportUsed =
+        false;
+
+      e("reportButton")
+        .textContent =
+        "🚩 Raportează trișare";
+    }
 
     render();
   }
@@ -1651,7 +2584,7 @@ function renderHistory(){
     history.length === 0
   ){
     box.innerHTML =
-      "<div>Nu există încă runde terminate.</div>";
+      "Nu există încă istoric.";
 
     return;
   }
@@ -1662,60 +2595,83 @@ function renderHistory(){
       item=>{
 
         const row =
-          document
-            .createElement(
-              "div"
-            );
+          document.createElement(
+            "div"
+          );
 
         row.className =
           "historyItem";
 
-        const cards =
-          item.cards
-            .map(
-              card=>
-                `${escapeHTML(card.name)}: ${card.rank}${card.suit}${card.cut ? " ✂️" : ""}`
-            )
-            .join("<br>");
+        if(
+          item.type ===
+          "cheating"
+        ){
 
-        row.innerHTML = `
+          row.classList.add(
+            "cheatHistory"
+          );
 
-          <div class="historyTitle">
+          row.innerHTML = `
 
-            Runda ${item.round}
+            <div class="historyTitle">
+              🚩 Trișare
+            </div>
 
-          </div>
+            <div>
+              Echipa ${item.cheatingTeam}
+              a pierdut partida.
+            </div>
 
-          <div>
+            <div>
+              Echipa ${item.winnerTeam}
+              primește victoria.
+            </div>
 
-            A început:
-            ${escapeHTML(item.openerName)}
-            (${item.openingRank})
+            <div class="historyCards">
+              ${item.reasons.map(escapeHTML).join("<br>")}
+            </div>
 
-          </div>
+          `;
 
-          <div>
+        }else{
 
-            A luat:
-            ${escapeHTML(item.winnerName)}
-            — Echipa ${item.winnerTeam}
+          const cards =
+            item.cards
+              .map(
+                card=>
+                  `${escapeHTML(card.name)}: ${card.rank}${card.suit}${card.cut ? " ✂️" : ""}`
+              )
+              .join("<br>");
 
-          </div>
+          row.innerHTML = `
 
-          <div>
+            <div class="historyTitle">
+              Runda ${item.round}
+            </div>
 
-            Puncte:
-            ${item.points}
+            <div>
+              A început:
+              ${escapeHTML(item.openerName)}
+              (${item.openingRank})
+            </div>
 
-          </div>
+            <div>
+              A luat:
+              ${escapeHTML(item.winnerName)}
+              — Echipa ${item.winnerTeam}
+            </div>
 
-          <div class="historyCards">
+            <div>
+              Puncte:
+              ${item.points}
+            </div>
 
-            ${cards}
+            <div class="historyCards">
+              ${cards}
+            </div>
 
-          </div>
-
-        `;
+          `;
+        }
 
         box.appendChild(
           row
@@ -1790,20 +2746,18 @@ function render(){
       .length;
 
   const team1Count =
-    state.players
+    [0,2,4]
       .filter(
-        p =>
-          p &&
-          p.team === 1
+        seat =>
+          state.players[seat]
       )
       .length;
 
   const team2Count =
-    state.players
+    [1,3,5]
       .filter(
-        p =>
-          p &&
-          p.team === 2
+        seat =>
+          state.players[seat]
       )
       .length;
 
@@ -1844,7 +2798,12 @@ function render(){
       state.started
     );
 
-  /* RESULT */
+  e("reportButton")
+    .classList
+    .toggle(
+      "hidden",
+      !state.started
+    );
 
   if(
     state.lastResult
@@ -1866,8 +2825,6 @@ function render(){
       );
   }
 
-  /* DECISION */
-
   e("decisionControls")
     .classList
     .toggle(
@@ -1875,16 +2832,14 @@ function render(){
       !(
         state.started &&
         state.awaitingDecision &&
-        state.opener ===
-          mySeat
+        state.opener === mySeat
       )
     );
-
-  /* TURN */
 
   if(
     state.awaitingDecision
   ){
+
     const opener =
       state.players[
         state.opener
@@ -1892,15 +2847,15 @@ function render(){
 
     e("turnMessage")
       .textContent =
-      state.opener ===
-      mySeat
-        ? "Alegi: Continui sau oprești runda?"
+      state.opener === mySeat
+        ? "Alegi: continui sau oprești runda?"
         : `${opener?.name || "Jucătorul"} decide.`;
   }
 
   else if(
     state.started
   ){
+
     const current =
       state.players[
         state.turn
@@ -1908,8 +2863,7 @@ function render(){
 
     e("turnMessage")
       .textContent =
-      state.turn ===
-      mySeat
+      state.turn === mySeat
         ? (
             state.continuationMode
               ? `🟢 Alege ${state.openingRank}, 7 sau 8`
@@ -1919,6 +2873,7 @@ function render(){
   }
 
   else{
+
     e("turnMessage")
       .textContent =
       `Echipa 1: ${team1Count}/3 • Echipa 2: ${team2Count}/3`;
@@ -1937,16 +2892,16 @@ function render(){
     index < 6;
     index++
   ){
+
     const player =
       state.players[
         index
       ];
 
     const box =
-      document
-        .createElement(
-          "div"
-        );
+      document.createElement(
+        "div"
+      );
 
     box.className =
       `player p${index}`;
@@ -1962,14 +2917,8 @@ function render(){
             border:2px dashed #ffffff55;
             border-radius:50%;
             margin:auto;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            opacity:.5;
           "
-        >
-          +
-        </div>
+        ></div>
 
         <div class="playerName">
           Loc liber
@@ -1994,8 +2943,15 @@ function render(){
       );
     }
 
-    let kick =
-      "";
+    if(
+      player.speaking
+    ){
+      box.classList.add(
+        "speaking"
+      );
+    }
+
+    let kick = "";
 
     if(
       host &&
@@ -2045,16 +3001,27 @@ function render(){
             : "t2"
         }"
       >
-
         Echipa ${player.team}
-
-        ${
-          player.bot
-            ? " 🤖"
-            : ""
-        }
-
+        ${player.bot ? " 🤖" : ""}
       </div>
+
+      ${
+        !player.bot
+          ? `
+            <div class="voiceBadge">
+              ${
+                player.voiceEnabled
+                  ? (
+                      player.speaking
+                        ? "🔊 Vorbește"
+                        : "🎤"
+                    )
+                  : "🔇"
+              }
+            </div>
+          `
+          : ""
+      }
 
       ${kick}
 
@@ -2081,10 +3048,9 @@ function render(){
     play=>{
 
       const card =
-        document
-          .createElement(
-            "div"
-          );
+        document.createElement(
+          "div"
+        );
 
       card.className =
         "card";
@@ -2145,10 +3111,9 @@ function render(){
     )=>{
 
       const element =
-        document
-          .createElement(
-            "div"
-          );
+        document.createElement(
+          "div"
+        );
 
       element.className =
         "card";
@@ -2185,7 +3150,7 @@ function render(){
         );
 
         element.onclick =
-          () =>
+          ()=>
             playCard(
               index
             );
@@ -2207,6 +3172,23 @@ function render(){
   );
 
   renderHistory();
+}
+
+/* =========================
+   HELPERS
+========================= */
+
+function escapeHTML(value){
+
+  const div =
+    document.createElement(
+      "div"
+    );
+
+  div.textContent =
+    String(value);
+
+  return div.innerHTML;
 }
 
 function showError(text){
