@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ro">
 
@@ -19,27 +18,23 @@
   box-sizing:border-box;
 }
 
-html,
 body{
   margin:0;
   min-height:100%;
-  font-family:Arial,Helvetica,sans-serif;
+  font-family:Arial,sans-serif;
   color:white;
-  background:#090806;
-}
 
-body{
   background:
     radial-gradient(
-      circle at 50% 35%,
-      #50301a 0%,
-      #21150d 42%,
-      #070806 100%
+      circle at 50% 30%,
+      #51321d,
+      #20140c 45%,
+      #070806
     );
 }
 
 .hidden{
-  display:none !important;
+  display:none!important;
 }
 
 button,
@@ -47,28 +42,13 @@ input{
   font-family:inherit;
 }
 
-/* =========================
-   LOBBY
-========================= */
-
 #lobby{
   width:min(92%,430px);
-  margin:65px auto;
-  padding:26px;
-  text-align:center;
+  margin:60px auto;
+  padding:25px;
   background:#07110ff2;
-  border:1px solid #ffffff25;
   border-radius:22px;
-  box-shadow:0 18px 50px #000b;
-}
-
-#lobby h1{
-  margin:0 0 5px;
-  font-size:36px;
-}
-
-#lobby p{
-  opacity:.8;
+  text-align:center;
 }
 
 #lobby input{
@@ -76,208 +56,162 @@ input{
   padding:14px;
   margin:7px 0;
   border:1px solid #ffffff25;
-  border-radius:11px;
+  border-radius:10px;
   background:#111c18;
   color:white;
-  font-size:17px;
+  font-size:16px;
 }
 
-.lobbyBtn{
+.mainButton{
   width:100%;
   padding:14px;
   margin:6px 0;
   border:0;
   border-radius:11px;
+  background:#33983c;
   color:white;
-  background:#2f9737;
-  font-size:17px;
   font-weight:bold;
+  font-size:16px;
 }
 
-.joinBtn{
-  background:#255dac;
+.blue{
+  background:#285faf;
 }
 
 #error{
-  color:#ff8e8e;
+  color:#ff8888;
 }
-
-/* =========================
-   GAME
-========================= */
 
 #game{
-  min-height:100vh;
-  padding:12px;
+  padding:10px;
 }
 
-/* =========================
-   TOP
-========================= */
-
-.topbar{
-  max-width:1500px;
+.top{
+  max-width:1450px;
   margin:auto;
   display:grid;
-  grid-template-columns:220px 1fr 145px;
-  gap:12px;
-  align-items:center;
+  grid-template-columns:180px 1fr 120px;
+  gap:8px;
 }
 
-.glass{
-  background:#071019ee;
+.panel{
+  background:#071019ef;
   border:1px solid #ffffff20;
   border-radius:14px;
-  box-shadow:0 7px 22px #0008;
 }
 
-.roomBox{
-  min-height:82px;
-  padding:12px 16px;
-}
-
-.roomBox small{
-  color:#bbb;
+.room{
+  padding:10px;
 }
 
 #roomCode{
   display:block;
-  margin-top:4px;
-  font-size:29px;
+  color:#ffd642;
+  font-size:25px;
   font-weight:bold;
-  letter-spacing:3px;
-  color:#ffd23f;
 }
 
-.scoreBox{
-  min-height:82px;
+.score{
   display:flex;
-  justify-content:center;
   align-items:center;
-  gap:28px;
+  justify-content:center;
+  gap:25px;
 }
 
-.teamBox{
-  font-size:19px;
-  font-weight:bold;
+.team1{
+  color:#8ff05a;
 }
 
-.teamOne{
-  color:#8ef153;
-}
-
-.teamTwo{
-  color:#579dff;
+.team2{
+  color:#65a4ff;
 }
 
 .scoreNumber{
-  font-size:44px;
-  margin-left:10px;
-}
-
-.hostBox{
-  min-height:82px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#ffd33d;
+  font-size:36px;
   font-weight:bold;
 }
 
-/* =========================
-   LAYOUT
-========================= */
+.host{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#ffd642;
+  font-weight:bold;
+}
 
 .layout{
-  max-width:1500px;
-  margin:10px auto 0;
+  max-width:1450px;
+  margin:10px auto;
   display:grid;
-  grid-template-columns:1fr 190px;
-  gap:12px;
+  grid-template-columns:1fr 260px;
+  gap:10px;
 }
 
-.tableArea{
+/* TABLE */
+
+.tableZone{
   position:relative;
-  height:690px;
+  height:650px;
 }
-
-/* =========================
-   TABLE
-========================= */
 
 .table{
   position:absolute;
-  left:50%;
   top:60px;
+  left:50%;
   transform:translateX(-50%);
-  width:min(1100px,82vw);
-  height:560px;
+
+  width:min(1050px,82vw);
+  height:530px;
+
   border-radius:50%;
-  border:18px solid #6b391c;
+  border:16px solid #6b391d;
 
   background:
     radial-gradient(
-      ellipse at center,
-      #2c7e3e 0%,
-      #1a612e 62%,
-      #0c4020 100%
+      ellipse,
+      #2c7d3e,
+      #175c2b 65%,
+      #0b3d1e
     );
 
   box-shadow:
-    inset 0 0 55px #0008,
-    0 25px 55px #000b;
+    inset 0 0 50px #0008,
+    0 25px 50px #000b;
 }
-
-.table:after{
-  content:"";
-  position:absolute;
-  inset:-10px;
-  border:5px solid #9a5c32;
-  border-radius:50%;
-  pointer-events:none;
-}
-
-/* =========================
-   PLAYERS
-========================= */
 
 .player{
   position:absolute;
-  width:170px;
+  width:150px;
   text-align:center;
   z-index:10;
 }
 
 .avatar{
-  width:135px;
-  height:135px;
+  width:120px;
+  height:120px;
   object-fit:contain;
-  filter:drop-shadow(0 9px 10px #000a);
 }
 
 .player.active .avatar{
-  transform:scale(1.07);
   filter:
-    drop-shadow(0 0 7px #b8ff36)
-    drop-shadow(0 0 20px #8dff00);
+    drop-shadow(0 0 8px #aaff30)
+    drop-shadow(0 0 18px #86ff00);
 }
 
 .playerName{
   display:inline-block;
-  margin-top:-7px;
-  padding:5px 10px;
+  background:#111d;
   border-radius:8px;
-  background:#101010dc;
-  font-size:17px;
+  padding:4px 8px;
   font-weight:bold;
 }
 
-.playerTeam{
+.teamTag{
   display:inline-block;
-  margin-top:4px;
-  padding:4px 8px;
-  border-radius:7px;
-  font-size:13px;
+  margin-top:3px;
+  padding:3px 7px;
+  border-radius:6px;
+  font-size:12px;
 }
 
 .t1{
@@ -285,119 +219,58 @@ input{
 }
 
 .t2{
-  background:#17458b;
+  background:#17478d;
 }
 
-.cardCount{
-  margin-top:3px;
-  font-size:11px;
-  opacity:.75;
-}
-
-.kickButton{
-  margin-top:5px;
-  padding:5px 8px;
-  border:0;
-  border-radius:7px;
-  background:#b62828;
-  color:white;
-  font-weight:bold;
-}
-
-.emptyPlayer{
-  opacity:.4;
-}
-
-.emptyAvatar{
-  width:90px;
-  height:90px;
-  margin:15px auto;
-  border:2px dashed #ffffff77;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:35px;
-}
-
-/* poziții */
-
-.p0{
-  left:6%;
-  top:15%;
-}
-
-.p1{
-  left:43%;
-  top:-11%;
-}
-
-.p2{
-  right:6%;
-  top:15%;
-}
-
-.p3{
-  right:4%;
-  bottom:3%;
-}
-
-.p4{
-  left:43%;
-  bottom:-12%;
-}
-
-.p5{
-  left:4%;
-  bottom:3%;
-}
-
-/* =========================
-   CARDS CENTER
-========================= */
+.p0{left:5%;top:15%}
+.p1{left:43%;top:-10%}
+.p2{right:5%;top:15%}
+.p3{right:4%;bottom:3%}
+.p4{left:43%;bottom:-11%}
+.p5{left:4%;bottom:3%}
 
 .centerCards{
   position:absolute;
   left:50%;
   top:49%;
   transform:translate(-50%,-50%);
-  min-width:300px;
-  min-height:170px;
   display:flex;
+  min-width:260px;
+  min-height:150px;
   justify-content:center;
   align-items:center;
-  z-index:5;
 }
 
-/* =========================
-   CARD
-========================= */
+/* CARDS */
 
 .card{
   position:relative;
-  width:90px;
-  height:132px;
-  flex:0 0 90px;
+  width:82px;
+  height:120px;
+  flex:0 0 82px;
+
+  border-radius:9px;
+
   background:#fff9ed;
-  border:1px solid #d7cab1;
-  border-radius:10px;
   color:#111;
-  box-shadow:0 6px 13px #0008;
-  overflow:hidden;
+
+  border:1px solid #d2c7b1;
+
+  box-shadow:0 5px 12px #0008;
+
   user-select:none;
 }
 
-.card.red{
+.red{
   color:#ce241c;
 }
 
 .cardTop{
   position:absolute;
-  top:6px;
-  left:8px;
+  top:5px;
+  left:7px;
   font-family:Georgia,serif;
-  font-size:25px;
-  line-height:20px;
+  font-size:22px;
   font-weight:bold;
 }
 
@@ -405,56 +278,35 @@ input{
   position:absolute;
   inset:0;
   display:flex;
-  justify-content:center;
   align-items:center;
-  font-family:Georgia,serif;
-  font-size:55px;
+  justify-content:center;
+  font-size:48px;
 }
 
 .cardBottom{
   position:absolute;
-  right:8px;
-  bottom:6px;
+  right:7px;
+  bottom:5px;
   transform:rotate(180deg);
   font-family:Georgia,serif;
-  font-size:24px;
-  line-height:19px;
+  font-size:21px;
   font-weight:bold;
 }
 
-.playedCard{
-  margin-left:-20px;
-  transform:rotate(var(--rot));
+.played{
+  margin-left:-18px;
 }
-
-/* =========================
-   HAND
-========================= */
 
 .handPanel{
-  width:min(1100px,94vw);
-  margin:-7px auto 0;
   padding:10px;
-  position:relative;
-  z-index:20;
-  background:#071019ee;
-  border:1px solid #ffffff20;
-  border-radius:15px;
-  box-shadow:0 7px 25px #0009;
-}
-
-.turnMessage{
+  margin-top:-10px;
   text-align:center;
-  color:#ffd43c;
-  font-size:18px;
-  font-weight:bold;
-  margin-bottom:8px;
 }
 
-.hand{
+#hand{
   display:flex;
   justify-content:center;
-  gap:6px;
+  gap:5px;
   overflow-x:auto;
 }
 
@@ -462,201 +314,193 @@ input{
   cursor:pointer;
 }
 
-.canPlay:active{
-  transform:translateY(-10px);
-}
-
 .disabled{
-  opacity:.6;
+  opacity:.55;
   pointer-events:none;
 }
 
-/* =========================
-   DECISION
-========================= */
-
-.decisionBox{
-  margin:10px auto;
-  text-align:center;
-}
-
-.continueButton{
-  padding:13px 18px;
-  margin:5px;
-  border:0;
-  border-radius:11px;
-  background:#34a347;
-  color:white;
-  font-size:16px;
+#turnMessage{
+  margin-bottom:8px;
+  color:#ffd642;
   font-weight:bold;
 }
 
-.stopButton{
-  padding:13px 18px;
-  margin:5px;
+/* BUTTONS */
+
+.controls{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:6px;
+  margin:7px;
+}
+
+.action{
+  padding:11px 15px;
   border:0;
-  border-radius:11px;
-  background:#bd3838;
+  border-radius:9px;
   color:white;
-  font-size:16px;
   font-weight:bold;
 }
 
-/* =========================
-   INFO
-========================= */
-
-.infoPanel{
-  padding:15px;
-  height:max-content;
+.start{
+  background:#369a3b;
 }
 
-.infoTitle{
-  margin-top:13px;
+.bot{
+  background:#6a49b8;
+}
+
+.continue{
+  background:#34a447;
+}
+
+.stop{
+  background:#b93b3b;
+}
+
+.kick{
+  margin-top:4px;
+  padding:5px;
+  border:0;
+  border-radius:6px;
+  color:white;
+  background:#ad2828;
+}
+
+/* CHAT */
+
+.side{
+  padding:10px;
+  min-width:0;
+}
+
+.chatTitle{
+  font-size:18px;
+  font-weight:bold;
+  margin-bottom:8px;
+}
+
+#chatMessages{
+  height:330px;
+  overflow-y:auto;
+  background:#02070680;
+  border-radius:10px;
+  padding:8px;
+}
+
+.chatMessage{
+  margin:5px 0;
+  padding:6px 8px;
+  background:#ffffff0e;
+  border-radius:7px;
+  word-break:break-word;
+}
+
+.chatName{
+  font-weight:bold;
+  color:#ffd642;
+}
+
+.chatForm{
+  margin-top:8px;
+  display:flex;
+  gap:5px;
+}
+
+#chatInput{
+  min-width:0;
+  flex:1;
+  padding:10px;
+  border:1px solid #ffffff22;
+  border-radius:9px;
+  background:#111b18;
+  color:white;
+  font-size:16px;
+}
+
+.send{
+  border:0;
+  border-radius:9px;
+  padding:10px;
+  background:#3278cf;
+  color:white;
+  font-weight:bold;
+}
+
+.info{
+  margin-top:12px;
+  font-size:13px;
   color:#bbb;
 }
 
-.infoValue{
-  margin-top:5px;
-  font-size:18px;
-}
-
-.green{
-  color:#8fff60;
-}
-
-/* =========================
-   START
-========================= */
-
-#startButton{
-  position:fixed;
-  right:20px;
-  bottom:20px;
-  z-index:100;
-  padding:14px 22px;
-  border:0;
-  border-radius:12px;
-  background:#3c9c33;
-  color:white;
-  font-size:18px;
-  font-weight:bold;
-}
-
-/* =========================
-   MOBILE
-========================= */
+/* MOBILE */
 
 @media(max-width:850px){
 
-  #game{
-    padding:5px;
+  .top{
+    grid-template-columns:95px 1fr 55px;
   }
 
-  .topbar{
-    grid-template-columns:105px 1fr 65px;
-    gap:5px;
-  }
-
-  .roomBox,
-  .scoreBox,
-  .hostBox{
-    min-height:61px;
-  }
-
-  .roomBox{
-    padding:7px;
+  .room{
+    font-size:9px;
   }
 
   #roomCode{
-    font-size:17px;
-    letter-spacing:1px;
+    font-size:16px;
   }
 
-  .teamBox{
+  .score{
+    gap:5px;
     font-size:10px;
   }
 
   .scoreNumber{
-    font-size:27px;
-    margin-left:3px;
+    font-size:25px;
   }
 
-  .hostBox{
-    font-size:10px;
+  .host{
+    font-size:9px;
   }
 
   .layout{
     display:block;
   }
 
-  .infoPanel{
-    display:none;
-  }
-
-  .tableArea{
-    height:510px;
+  .tableZone{
+    height:500px;
   }
 
   .table{
-    top:55px;
     width:97vw;
-    height:415px;
-    border-width:10px;
+    height:410px;
+    border-width:9px;
   }
 
   .player{
-    width:95px;
+    width:92px;
   }
 
   .avatar{
-    width:78px;
-    height:78px;
+    width:76px;
+    height:76px;
   }
 
   .playerName{
+    padding:2px 4px;
     font-size:10px;
-    padding:3px 5px;
   }
 
-  .playerTeam{
-    font-size:9px;
-    padding:2px 5px;
+  .teamTag{
+    font-size:8px;
   }
 
-  .cardCount{
-    display:none;
-  }
-
-  .p0{
-    left:-2%;
-    top:18%;
-  }
-
-  .p1{
-    left:38%;
-    top:-8%;
-  }
-
-  .p2{
-    right:-2%;
-    top:18%;
-  }
-
-  .p3{
-    right:0;
-    bottom:4%;
-  }
-
-  .p4{
-    left:38%;
-    bottom:-8%;
-  }
-
-  .p5{
-    left:0;
-    bottom:4%;
-  }
+  .p0{left:-2%;top:17%}
+  .p1{left:38%;top:-7%}
+  .p2{right:-2%;top:17%}
+  .p3{right:0;bottom:4%}
+  .p4{left:38%;bottom:-8%}
+  .p5{left:0;bottom:4%}
 
   .centerCards{
     transform:
@@ -664,30 +508,35 @@ input{
       scale(.68);
   }
 
-  .hand{
-    justify-content:flex-start;
-  }
-
   .card{
-    width:64px;
-    height:94px;
-    flex-basis:64px;
-  }
-
-  .cardTop{
-    font-size:18px;
-    line-height:15px;
+    width:62px;
+    height:92px;
+    flex-basis:62px;
   }
 
   .cardCenter{
-    font-size:38px;
+    font-size:35px;
+  }
+
+  .cardTop{
+    font-size:17px;
   }
 
   .cardBottom{
-    font-size:17px;
-    line-height:14px;
+    font-size:16px;
   }
 
+  #hand{
+    justify-content:flex-start;
+  }
+
+  .side{
+    margin-top:10px;
+  }
+
+  #chatMessages{
+    height:200px;
+  }
 }
 
 </style>
@@ -700,9 +549,7 @@ input{
 
 <h1>🃏 Șeptică 3v3</h1>
 
-<p>
-6 jucători • Echipa 1 vs Echipa 2
-</p>
+<p>6 jucători • Echipa 1 vs Echipa 2</p>
 
 <input
   id="name"
@@ -711,7 +558,7 @@ input{
 >
 
 <button
-  class="lobbyBtn"
+  class="mainButton"
   onclick="createRoom()"
 >
 Creează cameră
@@ -725,13 +572,13 @@ Creează cameră
 >
 
 <button
-  class="lobbyBtn joinBtn"
+  class="mainButton blue"
   onclick="joinRoom()"
 >
 Intră în cameră
 </button>
 
-<p id="error"></p>
+<div id="error"></div>
 
 </div>
 
@@ -741,61 +588,44 @@ Intră în cameră
   class="hidden"
 >
 
-<div class="topbar">
+<div class="top">
 
-<div class="roomBox glass">
-
-<small>
+<div class="room panel">
 Cod cameră
-</small>
-
-<span id="roomCode">
-------
-</span>
-
+<span id="roomCode">------</span>
 </div>
 
+<div class="score panel">
 
-<div class="scoreBox glass">
-
-<div class="teamBox teamOne">
-
+<div class="team1">
 ECHIPA 1
-
 <span
   id="score1"
   class="scoreNumber"
 >
 0
 </span>
-
 </div>
 
-<div>
--
-</div>
+<div>-</div>
 
-<div class="teamBox teamTwo">
-
+<div class="team2">
 <span
   id="score2"
   class="scoreNumber"
 >
 0
 </span>
-
 ECHIPA 2
-
 </div>
 
 </div>
-
 
 <div
-  id="hostBox"
-  class="hostBox glass"
+  id="host"
+  class="host panel"
 >
-👑 Host
+👑
 </div>
 
 </div>
@@ -805,7 +635,7 @@ ECHIPA 2
 
 <div>
 
-<div class="tableArea">
+<div class="tableZone">
 
 <div class="table">
 
@@ -821,30 +651,26 @@ ECHIPA 2
 </div>
 
 
-<div class="handPanel">
+<div class="handPanel panel">
 
-<div
-  id="turnMessage"
-  class="turnMessage"
->
+<div id="turnMessage">
 Așteptăm...
 </div>
 
-
 <div
-  id="decisionBox"
-  class="decisionBox hidden"
+  id="decisionControls"
+  class="controls hidden"
 >
 
 <button
-  class="continueButton"
+  class="action continue"
   onclick="continueRound()"
 >
 ▶ Continuă runda
 </button>
 
 <button
-  class="stopButton"
+  class="action stop"
   onclick="stopRound()"
 >
 ■ Oprește runda
@@ -854,73 +680,92 @@ Așteptăm...
 
 
 <div
-  id="hand"
-  class="hand"
+  id="lobbyControls"
+  class="controls"
+>
+
+<button
+  id="botButton"
+  class="action bot hidden"
+  onclick="fillWithBots()"
+>
+🤖 Test cu 5 boți
+</button>
+
+<button
+  id="startButton"
+  class="action start hidden"
+  onclick="startGame()"
+>
+▶ Pornește jocul
+</button>
+
+</div>
+
+
+<div id="hand"></div>
+
+</div>
+
+</div>
+
+
+<div class="side panel">
+
+<div class="chatTitle">
+💬 Chat cameră
+</div>
+
+<div id="chatMessages"></div>
+
+<form
+  id="chatForm"
+  class="chatForm"
+>
+
+<input
+  id="chatInput"
+  maxlength="200"
+  autocomplete="off"
+  placeholder="Scrie un mesaj..."
+>
+
+<button
+  class="send"
+  type="submit"
+>
+Trimite
+</button>
+
+</form>
+
+<div class="info">
+
+<div>
+Prima carte:
+<strong id="firstCard">-</strong>
+</div>
+
+<div>
+Tăieri:
+<strong id="cuts">7 și 8</strong>
+</div>
+
+<div>
+Cărți pe masă:
+<strong id="playedCount">0</strong>
+</div>
+
+<div
+  id="statusMessage"
+  style="margin-top:8px;color:#83ef68"
 ></div>
 
 </div>
 
 </div>
 
-
-<div class="infoPanel glass">
-
-<div class="infoTitle">
-Prima carte:
 </div>
-
-<div
-  id="firstCard"
-  class="infoValue"
->
--
-</div>
-
-<div class="infoTitle">
-Tăieri:
-</div>
-
-<div
-  id="cutsAllowed"
-  class="infoValue"
->
-7 și 8
-</div>
-
-<div class="infoTitle">
-Cărți jucate:
-</div>
-
-<div
-  id="playedCount"
-  class="infoValue"
->
-0
-</div>
-
-<div class="infoTitle">
-Mesaj:
-</div>
-
-<div
-  id="message"
-  class="infoValue green"
->
-Așteptăm...
-</div>
-
-</div>
-
-</div>
-
-
-<button
-  id="startButton"
-  class="hidden"
-  onclick="startGame()"
->
-▶ Pornește jocul
-</button>
 
 </div>
 
@@ -934,7 +779,7 @@ const socket = io();
 let roomCode = null;
 let mySeat = null;
 let state = null;
-let myHand = [];
+let hand = [];
 
 const avatars = [
   "/player1.png",
@@ -958,16 +803,15 @@ function createRoom(){
     {
       name:e("name").value.trim()
     },
-    r=>{
+    response=>{
 
-      if(!r.ok){
-        showError(r.error);
-        return;
+      if(!response.ok){
+        return showError(response.error);
       }
 
-      enterRoom(
-        r.code,
-        r.seat
+      enter(
+        response.code,
+        response.seat
       );
     }
   );
@@ -981,22 +825,21 @@ function joinRoom(){
       code:e("code").value.trim(),
       name:e("name").value.trim()
     },
-    r=>{
+    response=>{
 
-      if(!r.ok){
-        showError(r.error);
-        return;
+      if(!response.ok){
+        return showError(response.error);
       }
 
-      enterRoom(
-        r.code,
-        r.seat
+      enter(
+        response.code,
+        response.seat
       );
     }
   );
 }
 
-function enterRoom(code,seat){
+function enter(code,seat){
 
   roomCode = code;
   mySeat = seat;
@@ -1010,8 +853,7 @@ function enterRoom(code,seat){
     .remove("hidden");
 
   e("roomCode")
-    .textContent =
-    code;
+    .textContent = code;
 }
 
 socket.on(
@@ -1022,7 +864,25 @@ socket.on(
   }
 );
 
-/* GAME */
+/* BOTS */
+
+function fillWithBots(){
+
+  socket.emit(
+    "fillWithBots",
+    {
+      code:roomCode
+    },
+    response=>{
+
+      if(!response.ok){
+        alert(response.error);
+      }
+    }
+  );
+}
+
+/* START */
 
 function startGame(){
 
@@ -1031,14 +891,16 @@ function startGame(){
     {
       code:roomCode
     },
-    r=>{
+    response=>{
 
-      if(!r.ok){
-        alert(r.error);
+      if(!response.ok){
+        alert(response.error);
       }
     }
   );
 }
+
+/* CONTINUE */
 
 function continueRound(){
 
@@ -1047,10 +909,10 @@ function continueRound(){
     {
       code:roomCode
     },
-    r=>{
+    response=>{
 
-      if(!r.ok){
-        alert(r.error);
+      if(!response.ok){
+        alert(response.error);
       }
     }
   );
@@ -1063,14 +925,16 @@ function stopRound(){
     {
       code:roomCode
     },
-    r=>{
+    response=>{
 
-      if(!r.ok){
-        alert(r.error);
+      if(!response.ok){
+        alert(response.error);
       }
     }
   );
 }
+
+/* CARD */
 
 function playCard(index){
 
@@ -1078,12 +942,12 @@ function playCard(index){
     "playCard",
     {
       code:roomCode,
-      index
+      index:index
     },
-    r=>{
+    response=>{
 
-      if(!r.ok){
-        alert(r.error);
+      if(!response.ok){
+        alert(response.error);
       }
     }
   );
@@ -1096,9 +960,7 @@ function kickPlayer(seat){
   const player =
     state.players[seat];
 
-  if(!player){
-    return;
-  }
+  if(!player) return;
 
   if(
     !confirm(
@@ -1112,12 +974,12 @@ function kickPlayer(seat){
     "kickPlayer",
     {
       code:roomCode,
-      seat
+      seat:seat
     },
-    r=>{
+    response=>{
 
-      if(!r.ok){
-        alert(r.error);
+      if(!response.ok){
+        alert(response.error);
       }
     }
   );
@@ -1128,20 +990,101 @@ socket.on(
   ()=>{
 
     alert(
-      "Host-ul te-a dat afară."
+      "Host-ul te-a dat afară din cameră."
     );
 
     location.reload();
   }
 );
 
+/* CHAT */
+
+e("chatForm")
+  .addEventListener(
+    "submit",
+    event=>{
+
+      event.preventDefault();
+
+      const text =
+        e("chatInput")
+          .value
+          .trim();
+
+      if(!text) return;
+
+      socket.emit(
+        "chatMessage",
+        {
+          code:roomCode,
+          text:text
+        },
+        response=>{
+
+          if(
+            response &&
+            !response.ok
+          ){
+            alert(response.error);
+            return;
+          }
+
+          e("chatInput").value = "";
+        }
+      );
+    }
+  );
+
+socket.on(
+  "chatMessage",
+  message=>{
+
+    const box =
+      document.createElement("div");
+
+    box.className =
+      "chatMessage";
+
+    box.innerHTML = `
+
+      <span class="chatName">
+
+        ${escapeHTML(message.name)}:
+
+      </span>
+
+      ${escapeHTML(message.text)}
+
+    `;
+
+    e("chatMessages")
+      .appendChild(box);
+
+    e("chatMessages")
+      .scrollTop =
+      e("chatMessages")
+        .scrollHeight;
+  }
+);
+
+function escapeHTML(value){
+
+  const div =
+    document.createElement("div");
+
+  div.textContent =
+    String(value);
+
+  return div.innerHTML;
+}
+
 /* STATE */
 
 socket.on(
   "state",
-  s=>{
+  newState=>{
 
-    state = s;
+    state = newState;
 
     render();
   }
@@ -1149,19 +1092,18 @@ socket.on(
 
 socket.on(
   "hand",
-  h=>{
+  newHand=>{
 
-    myHand = h;
+    hand = newHand;
 
     render();
   }
 );
 
-/* CARD */
+/* CARD DESIGN */
 
-function cardIsRed(card){
-
-  return(
+function red(card){
+  return (
     card.suit === "♥" ||
     card.suit === "♦"
   );
@@ -1172,15 +1114,23 @@ function cardHTML(card){
   return `
 
     <div class="cardTop">
-      ${card.rank}<br>${card.suit}
+
+      ${card.rank}<br>
+      ${card.suit}
+
     </div>
 
     <div class="cardCenter">
+
       ${card.suit}
+
     </div>
 
     <div class="cardBottom">
-      ${card.rank}<br>${card.suit}
+
+      ${card.rank}<br>
+      ${card.suit}
+
     </div>
 
   `;
@@ -1190,9 +1140,7 @@ function cardHTML(card){
 
 function render(){
 
-  if(!state){
-    return;
-  }
+  if(!state) return;
 
   e("score1").textContent =
     state.scoreA ?? 0;
@@ -1200,46 +1148,56 @@ function render(){
   e("score2").textContent =
     state.scoreB ?? 0;
 
-  e("message").textContent =
+  e("statusMessage")
+    .textContent =
     state.message || "";
 
-  const amIHost =
+  const host =
     socket.id === state.hostId;
 
-  e("hostBox").textContent =
-    amIHost
-      ? "👑 Tu ești Host"
+  e("host").textContent =
+    host
+      ? "👑 Tu"
       : "👑 Host";
 
-  const connectedPlayers =
-    state.players.filter(Boolean).length;
+  const count =
+    state.players
+      .filter(Boolean)
+      .length;
+
+  e("botButton")
+    .classList
+    .toggle(
+      "hidden",
+      !(
+        host &&
+        !state.started &&
+        count < 6
+      )
+    );
 
   e("startButton")
     .classList
     .toggle(
       "hidden",
       !(
-        amIHost &&
-        connectedPlayers === 6 &&
-        !state.started
+        host &&
+        !state.started &&
+        count === 6
       )
     );
 
-  /* DECISION BUTTONS */
-
-  const showDecision =
+  const decision =
     state.started &&
     state.awaitingDecision &&
     state.opener === mySeat;
 
-  e("decisionBox")
+  e("decisionControls")
     .classList
     .toggle(
       "hidden",
-      !showDecision
+      !decision
     );
-
-  /* TURN */
 
   if(state.awaitingDecision){
 
@@ -1248,49 +1206,34 @@ function render(){
         state.opener
       ];
 
-    if(state.opener === mySeat){
-
-      e("turnMessage")
-        .textContent =
-        "Alegi: continui runda sau o oprești?";
-
-    }else{
-
-      e("turnMessage")
-        .textContent =
-        `${opener?.name || "Jucătorul"} decide dacă continuă runda.`;
-
-    }
+    e("turnMessage")
+      .textContent =
+      state.opener === mySeat
+        ? "Alegi dacă runda continuă."
+        : `${opener?.name || "Jucătorul"} decide.`;
 
   }else if(state.started){
 
-    const current =
+    const player =
       state.players[
         state.turn
       ];
 
-    if(state.turn === mySeat){
-
-      e("turnMessage")
-        .textContent =
-        state.continuationMode
-          ? `🟢 Alege ${state.openingRank}, 7 sau 8`
-          : "🟢 Rândul tău";
-
-    }else{
-
-      e("turnMessage")
-        .textContent =
-        `Rândul lui ${current?.name || "jucător"}`;
-
-    }
+    e("turnMessage")
+      .textContent =
+      state.turn === mySeat
+        ? (
+            state.continuationMode
+              ? `🟢 Alege ${state.openingRank}, 7 sau 8`
+              : "🟢 Rândul tău"
+          )
+        : `Rândul lui ${player?.name || "jucător"}`;
 
   }else{
 
     e("turnMessage")
       .textContent =
-      `${connectedPlayers}/6 jucători la masă`;
-
+      `${count}/6 jucători la masă`;
   }
 
   /* PLAYERS */
@@ -1300,53 +1243,39 @@ function render(){
 
   players.innerHTML = "";
 
-  for(
-    let index=0;
-    index<6;
-    index++
-  ){
+  for(let index=0;index<6;index++){
 
     const player =
       state.players[index];
 
     const box =
-      document.createElement(
-        "div"
-      );
+      document.createElement("div");
 
     box.className =
       `player p${index}`;
 
     if(!player){
 
-      box.classList.add(
-        "emptyPlayer"
-      );
-
       box.innerHTML = `
 
-        <div class="emptyAvatar">
-          +
+        <div
+          style="
+            width:70px;
+            height:70px;
+            border:2px dashed #ffffff55;
+            border-radius:50%;
+            margin:auto;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            opacity:.5;
+          "
+        >
+        +
         </div>
 
         <div class="playerName">
           Loc liber
-        </div>
-
-        <br>
-
-        <div
-          class="playerTeam ${
-            index % 2 === 0
-              ? "t1"
-              : "t2"
-          }"
-        >
-          Echipa ${
-            index % 2 === 0
-              ? "1"
-              : "2"
-          }
         </div>
 
       `;
@@ -1360,7 +1289,6 @@ function render(){
       state.started &&
       state.turn === index
     ){
-
       box.classList.add(
         "active"
       );
@@ -1369,7 +1297,7 @@ function render(){
     let kick = "";
 
     if(
-      amIHost &&
+      host &&
       !state.started &&
       index !== mySeat
     ){
@@ -1377,10 +1305,10 @@ function render(){
       kick = `
 
         <button
-          class="kickButton"
+          class="kick"
           onclick="kickPlayer(${index})"
         >
-          ✕ Dă afară
+        ✕ Dă afară
         </button>
 
       `;
@@ -1393,9 +1321,11 @@ function render(){
         src="${avatars[index]}"
       >
 
+      <br>
+
       <div class="playerName">
 
-        ${player.name}
+        ${escapeHTML(player.name)}
 
         ${
           index === mySeat
@@ -1408,7 +1338,7 @@ function render(){
       <br>
 
       <div
-        class="playerTeam ${
+        class="teamTag ${
           player.team === 1
             ? "t1"
             : "t2"
@@ -1417,14 +1347,11 @@ function render(){
 
         Echipa ${player.team}
 
-      </div>
-
-      <div class="cardCount">
-
         ${
-          state.handCounts[index]
-          ?? 0
-        } cărți
+          player.bot
+            ? " 🤖"
+            : ""
+        }
 
       </div>
 
@@ -1447,48 +1374,23 @@ function render(){
 
   center.innerHTML = "";
 
-  const rotations = [
-    "-14deg",
-    "10deg",
-    "-5deg",
-    "13deg",
-    "-10deg",
-    "6deg"
-  ];
-
   table.forEach(
-    (play,index)=>{
+    play=>{
 
-      const card =
-        document.createElement(
-          "div"
-        );
+      const c =
+        document.createElement("div");
 
-      card.className =
-        "card playedCard";
+      c.className =
+        "card played";
 
-      if(
-        cardIsRed(play.card)
-      ){
-        card.classList.add(
-          "red"
-        );
+      if(red(play.card)){
+        c.classList.add("red");
       }
 
-      card.style.setProperty(
-        "--rot",
-        rotations[
-          index %
-          rotations.length
-        ]
-      );
+      c.innerHTML =
+        cardHTML(play.card);
 
-      card.innerHTML =
-        cardHTML(
-          play.card
-        );
-
-      center.appendChild(card);
+      center.appendChild(c);
     }
   );
 
@@ -1498,33 +1400,28 @@ function render(){
 
   if(state.openingRank){
 
-    e("firstCard")
-      .textContent =
+    e("firstCard").textContent =
       state.openingRank;
 
-    e("cutsAllowed")
-      .textContent =
+    e("cuts").textContent =
       `${state.openingRank}, 7 sau 8`;
 
   }else{
 
-    e("firstCard")
-      .textContent =
-      "-";
+    e("firstCard").textContent = "-";
 
-    e("cutsAllowed")
-      .textContent =
+    e("cuts").textContent =
       "7 și 8";
   }
 
   /* HAND */
 
-  const hand =
+  const handBox =
     e("hand");
 
-  hand.innerHTML = "";
+  handBox.innerHTML = "";
 
-  myHand.forEach(
+  hand.forEach(
     (card,index)=>{
 
       const c =
@@ -1532,13 +1429,10 @@ function render(){
           "div"
         );
 
-      c.className =
-        "card";
+      c.className = "card";
 
-      if(cardIsRed(card)){
-        c.classList.add(
-          "red"
-        );
+      if(red(card)){
+        c.classList.add("red");
       }
 
       let canPlay =
@@ -1546,20 +1440,15 @@ function render(){
         state.turn === mySeat &&
         !state.awaitingDecision;
 
-      /*
-        Dacă ai ales CONTINUĂ,
-        doar 7 / 8 / openingRank
-        pot fi selectate.
-      */
       if(
         state.continuationMode &&
         state.turn === mySeat
       ){
-
         canPlay =
           card.rank === "7" ||
           card.rank === "8" ||
-          card.rank === state.openingRank;
+          card.rank ===
+            state.openingRank;
       }
 
       if(canPlay){
@@ -1581,20 +1470,16 @@ function render(){
       c.innerHTML =
         cardHTML(card);
 
-      hand.appendChild(c);
+      handBox.appendChild(c);
     }
   );
 }
 
-function showError(message){
-
-  e("error")
-    .textContent =
-    message;
+function showError(text){
+  e("error").textContent = text;
 }
 
 </script>
 
 </body>
-
 </html>
