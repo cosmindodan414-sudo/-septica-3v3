@@ -1,544 +1,789 @@
-
 <!DOCTYPE html>
 <html lang="ro">
-
 <head>
 <meta charset="UTF-8">
-
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1.0"
->
-
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Șeptică 3v3</title>
 
 <style>
+*{box-sizing:border-box}
 
-* {
-  box-sizing: border-box;
+body{
+  margin:0;
+  min-height:100vh;
+  font-family:Arial,sans-serif;
+  background:
+    radial-gradient(circle at center,#263827 0,#101812 55%,#070907 100%);
+  color:white;
+  overflow-x:hidden;
 }
 
-body {
-  margin: 0;
-  padding: 15px;
+.hidden{display:none!important}
 
-  font-family:
-    Arial,
-    sans-serif;
+button,input{
+  font-family:inherit;
+}
+
+/* =========================
+   LOBBY
+========================= */
+
+#lobby{
+  max-width:430px;
+  margin:70px auto;
+  padding:25px;
+  text-align:center;
+  background:#07120ed9;
+  border:1px solid #ffffff20;
+  border-radius:22px;
+}
+
+#lobby h1{
+  font-size:34px;
+  margin:0 0 5px;
+}
+
+#lobby input{
+  width:100%;
+  padding:15px;
+  margin:7px 0;
+  border:1px solid #ffffff25;
+  border-radius:12px;
+  background:#101c18;
+  color:white;
+  font-size:17px;
+}
+
+.mainButton{
+  width:100%;
+  border:0;
+  border-radius:12px;
+  padding:14px;
+  margin-top:7px;
+  font-weight:bold;
+  font-size:17px;
+  cursor:pointer;
+  background:#46a832;
+  color:white;
+}
+
+.secondaryButton{
+  background:#2362ba;
+}
+
+/* =========================
+   TOP BAR
+========================= */
+
+#game{
+  min-height:100vh;
+  padding:12px;
+}
+
+.topbar{
+  display:grid;
+  grid-template-columns:190px 1fr 110px;
+  gap:12px;
+  align-items:center;
+  max-width:1500px;
+  margin:auto;
+}
+
+.roomBox,
+.scoreBox,
+.hostBox{
+  background:#071019ec;
+  border:1px solid #ffffff1c;
+  border-radius:15px;
+  min-height:80px;
+}
+
+.roomBox{
+  padding:10px 16px;
+}
+
+.roomBox small{
+  opacity:.7;
+}
+
+.roomCode{
+  display:block;
+  font-size:26px;
+  font-weight:bold;
+  color:#ffd143;
+  letter-spacing:3px;
+  margin-top:3px;
+}
+
+.scoreBox{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:25px;
+  padding:8px 20px;
+}
+
+.team1{
+  color:#89ef4e;
+}
+
+.team2{
+  color:#57a1ff;
+}
+
+.scoreTeam{
+  text-align:center;
+  font-size:18px;
+  font-weight:bold;
+}
+
+.scoreNumber{
+  font-size:42px;
+  font-weight:bold;
+}
+
+.scoreDash{
+  font-size:28px;
+  opacity:.7;
+}
+
+.hostBox{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#ffd143;
+  font-weight:bold;
+}
+
+/* =========================
+   GAME AREA
+========================= */
+
+.gameLayout{
+  max-width:1500px;
+  margin:12px auto 0;
+  display:grid;
+  grid-template-columns:1fr 190px;
+  gap:12px;
+}
+
+.tableArea{
+  position:relative;
+  min-height:690px;
+}
+
+/* =========================
+   TABLE
+========================= */
+
+.gameTable{
+  position:absolute;
+  width:min(82vw,1100px);
+  height:570px;
+
+  left:50%;
+  top:55px;
+  transform:translateX(-50%);
+
+  border-radius:50%;
 
   background:
-    linear-gradient(
-      135deg,
-      #063d20,
-      #08783b
-    );
+    radial-gradient(ellipse,#237638 0%,#15592a 68%,#0a3c1c 100%);
 
-  color: white;
-
-  text-align: center;
-
-  min-height: 100vh;
-}
-
-.container {
-  max-width: 1000px;
-  margin: auto;
-}
-
-h1 {
-  margin-bottom: 5px;
-}
-
-.subtitle {
-  opacity: 0.8;
-  margin-bottom: 20px;
-}
-
-/* PANOURI */
-
-.panel {
-  background:
-    rgba(0,0,0,0.25);
-
-  border-radius: 18px;
-
-  padding: 18px;
-
-  margin-bottom: 15px;
+  border:18px solid #5d321b;
 
   box-shadow:
-    0 8px 25px
-    rgba(0,0,0,0.25);
+    inset 0 0 45px #0007,
+    0 20px 45px #0009;
 }
 
-/* INPUT */
-
-input {
-  width: 100%;
-
-  max-width: 350px;
-
-  padding: 14px;
-
-  margin: 6px;
-
-  border: none;
-
-  border-radius: 10px;
-
-  font-size: 16px;
+.gameTable:after{
+  content:"";
+  position:absolute;
+  inset:-10px;
+  border-radius:50%;
+  border:4px solid #8e532b;
+  pointer-events:none;
 }
 
-/* BUTOANE */
+/* =========================
+   PLAYERS
+========================= */
 
-button {
-  padding: 12px 18px;
-
-  margin: 6px;
-
-  border: none;
-
-  border-radius: 10px;
-
-  font-size: 15px;
-
-  font-weight: bold;
-
-  cursor: pointer;
+.player{
+  position:absolute;
+  width:145px;
+  text-align:center;
+  z-index:5;
 }
 
-.createButton {
-  background: #ffd54f;
-  color: #222;
+.avatar{
+  width:90px;
+  height:90px;
+  margin:auto;
+
+  border-radius:50%;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  font-size:58px;
+
+  background:linear-gradient(145deg,#34495e,#15202b);
+
+  border:4px solid #ffffff25;
+
+  box-shadow:0 8px 18px #0008;
+
+  transition:.25s;
 }
 
-.joinButton {
-  background: white;
-  color: #222;
-}
-
-.startButton {
-  background: #4caf50;
-  color: white;
-
-  font-size: 18px;
-
-  padding: 14px 25px;
-}
-
-.kickButton {
-  background: #d32f2f;
-  color: white;
-
-  padding: 8px 12px;
-
-  margin-top: 8px;
-}
-
-/* ASCUNS */
-
-.hidden {
-  display: none;
-}
-
-/* COD CAMERĂ */
-
-.roomCode {
-  font-size: 30px;
-
-  letter-spacing: 5px;
-
-  color: #ffd54f;
-
-  margin: 10px;
-}
-
-/* ECHIPE */
-
-.teams {
-  display: grid;
-
-  grid-template-columns:
-    1fr 1fr;
-
-  gap: 10px;
-
-  margin-bottom: 15px;
-}
-
-.team {
-  padding: 15px;
-
-  border-radius: 15px;
-
-  background:
-    rgba(255,255,255,0.12);
-}
-
-.score {
-  font-size: 32px;
-
-  font-weight: bold;
-
-  color: #ffd54f;
-}
-
-/* JUCĂTORI */
-
-.players {
-  display: grid;
-
-  grid-template-columns:
-    repeat(3,1fr);
-
-  gap: 10px;
-}
-
-.player {
-  padding: 12px;
-
-  border-radius: 12px;
-
-  background:
-    rgba(0,0,0,0.30);
-
-  min-height: 100px;
-}
-
-.player.active {
-  outline:
-    3px solid #ffd54f;
-
-  background:
-    rgba(255,213,79,0.15);
-}
-
-.playerName {
-  font-size: 17px;
-
-  font-weight: bold;
-}
-
-.playerTeam {
-  margin-top: 5px;
-
-  opacity: 0.8;
-}
-
-.turnText {
-  margin-top: 6px;
-
-  color: #ffd54f;
-
-  font-weight: bold;
-}
-
-/* MASĂ */
-
-.table {
-  min-height: 130px;
-
-  display: flex;
-
-  justify-content: center;
-
-  align-items: center;
-
-  flex-wrap: wrap;
-
-  gap: 8px;
-}
-
-/* CĂRȚI */
-
-.card {
-  width: 62px;
-
-  min-height: 88px;
-
-  background: white;
-
-  color: black;
-
-  border-radius: 9px;
-
-  font-size: 19px;
-
-  font-weight: bold;
-
+.player.active .avatar{
+  border-color:#b8ff36;
   box-shadow:
-    0 4px 8px
-    rgba(0,0,0,0.35);
+    0 0 10px #b8ff36,
+    0 0 28px #9dff21;
+  transform:scale(1.08);
 }
 
-.card.red {
-  color: #d32f2f;
+.playerName{
+  display:inline-block;
+  margin-top:4px;
+  padding:5px 10px;
+
+  background:#07100dde;
+
+  border-radius:9px;
+
+  font-weight:bold;
 }
 
-.card:disabled {
-  opacity: 0.75;
+.playerTeam{
+  display:inline-block;
+  font-size:13px;
+  margin-top:3px;
+  padding:4px 8px;
+  border-radius:7px;
 }
 
-/* MÂNA JUCĂTORULUI */
-
-.hand {
-  display: flex;
-
-  justify-content: center;
-
-  flex-wrap: wrap;
-
-  gap: 7px;
+.playerTeam.t1{
+  background:#236e17;
 }
 
-.myCard {
-  transition:
-    transform 0.15s;
+.playerTeam.t2{
+  background:#153e83;
 }
 
-.myCard:hover {
-  transform:
-    translateY(-5px);
+.cardCount{
+  font-size:12px;
+  opacity:.8;
+  margin-top:4px;
 }
 
-/* MESAJE */
-
-.message {
-  font-size: 17px;
-
-  padding: 10px;
-
-  color: #fff3b0;
+.kick{
+  background:#b82020;
+  color:white;
+  border:0;
+  border-radius:7px;
+  padding:5px 8px;
+  margin-top:5px;
+  cursor:pointer;
 }
 
-.error {
-  color: #ffaaaa;
+/* pozițiile celor 6 */
 
-  margin-top: 10px;
+.p0{
+  left:7%;
+  top:16%;
 }
 
-/* TELEFON */
+.p1{
+  left:43%;
+  top:-7%;
+}
 
-@media
-(max-width: 650px) {
+.p2{
+  right:7%;
+  top:16%;
+}
 
-  .players {
-    grid-template-columns:
-      repeat(2,1fr);
+.p3{
+  right:5%;
+  bottom:7%;
+}
+
+.p4{
+  left:43%;
+  bottom:-9%;
+}
+
+.p5{
+  left:5%;
+  bottom:7%;
+}
+
+/* =========================
+   TABLE CARDS
+========================= */
+
+.centerCards{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  min-width:250px;
+  min-height:160px;
+
+  z-index:3;
+}
+
+.playedCard{
+  margin-left:-16px;
+  transform:rotate(var(--r));
+}
+
+/* =========================
+   CARDS
+========================= */
+
+.card{
+  position:relative;
+
+  width:78px;
+  height:112px;
+
+  background:#fffaf0;
+  border:1px solid #d8cfbc;
+  border-radius:9px;
+
+  color:#131313;
+
+  box-shadow:0 5px 10px #0007;
+
+  cursor:pointer;
+}
+
+.card.red{
+  color:#cf241c;
+}
+
+.cardTop{
+  position:absolute;
+  top:5px;
+  left:7px;
+
+  font-family:Georgia,serif;
+  font-size:23px;
+  font-weight:bold;
+
+  line-height:20px;
+}
+
+.cardCenter{
+  position:absolute;
+  inset:0;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  font-family:Georgia,serif;
+  font-size:48px;
+  font-weight:bold;
+}
+
+.faceCenter{
+  font-size:42px;
+}
+
+.cardBottom{
+  position:absolute;
+  right:7px;
+  bottom:5px;
+
+  font-family:Georgia,serif;
+  font-size:22px;
+  font-weight:bold;
+
+  transform:rotate(180deg);
+}
+
+.card.disabled{
+  opacity:.65;
+  pointer-events:none;
+}
+
+/* =========================
+   HAND
+========================= */
+
+.handArea{
+  position:relative;
+  z-index:20;
+
+  max-width:1050px;
+  margin:-15px auto 0;
+
+  padding:12px;
+
+  background:#071019e8;
+  border:1px solid #ffffff20;
+  border-radius:16px;
+}
+
+.hand{
+  display:flex;
+  justify-content:center;
+  gap:5px;
+  overflow-x:auto;
+  padding:7px;
+}
+
+.hand .card{
+  flex:0 0 78px;
+  transition:.15s;
+}
+
+.hand .card:not(.disabled):active{
+  transform:translateY(-10px);
+}
+
+.turnMessage{
+  text-align:center;
+  font-weight:bold;
+  color:#ffd143;
+  margin-bottom:6px;
+}
+
+/* =========================
+   RIGHT INFO
+========================= */
+
+.infoPanel{
+  background:#071019ec;
+  border:1px solid #ffffff1e;
+  border-radius:15px;
+  padding:15px;
+  height:max-content;
+}
+
+.infoTitle{
+  opacity:.7;
+  font-size:14px;
+  margin-top:12px;
+}
+
+.infoValue{
+  font-size:18px;
+  margin-top:4px;
+}
+
+#statusMessage{
+  color:#91ff67;
+}
+
+/* =========================
+   START BUTTON
+========================= */
+
+#startButton{
+  position:fixed;
+  z-index:100;
+  bottom:20px;
+  right:20px;
+
+  background:#42a62d;
+  color:white;
+  border:0;
+  border-radius:14px;
+
+  padding:15px 25px;
+
+  font-size:18px;
+  font-weight:bold;
+
+  box-shadow:0 7px 20px #0007;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:850px){
+
+  body{
+    overflow:auto;
   }
 
-  .teams {
-    grid-template-columns:
-      1fr 1fr;
+  #game{
+    padding:5px;
   }
 
-  .card {
-    width: 55px;
-
-    min-height: 80px;
-
-    font-size: 17px;
+  .topbar{
+    grid-template-columns:100px 1fr 65px;
+    gap:5px;
   }
 
+  .roomBox,
+  .scoreBox,
+  .hostBox{
+    min-height:62px;
+  }
+
+  .roomCode{
+    font-size:17px;
+  }
+
+  .scoreBox{
+    gap:7px;
+    padding:5px;
+  }
+
+  .scoreTeam{
+    font-size:11px;
+  }
+
+  .scoreNumber{
+    font-size:27px;
+  }
+
+  .gameLayout{
+    display:block;
+  }
+
+  .infoPanel{
+    display:none;
+  }
+
+  .tableArea{
+    min-height:510px;
+  }
+
+  .gameTable{
+    top:50px;
+    width:97vw;
+    height:420px;
+    border-width:10px;
+  }
+
+  .player{
+    width:92px;
+  }
+
+  .avatar{
+    width:62px;
+    height:62px;
+    font-size:39px;
+    border-width:3px;
+  }
+
+  .playerName{
+    font-size:11px;
+    padding:3px 5px;
+  }
+
+  .playerTeam{
+    font-size:9px;
+    padding:2px 5px;
+  }
+
+  .cardCount{
+    display:none;
+  }
+
+  .p0{
+    left:-1%;
+    top:18%;
+  }
+
+  .p1{
+    left:38%;
+    top:-7%;
+  }
+
+  .p2{
+    right:-1%;
+    top:18%;
+  }
+
+  .p3{
+    right:0%;
+    bottom:5%;
+  }
+
+  .p4{
+    left:38%;
+    bottom:-8%;
+  }
+
+  .p5{
+    left:0%;
+    bottom:5%;
+  }
+
+  .centerCards{
+    transform:translate(-50%,-50%) scale(.72);
+  }
+
+  .handArea{
+    margin:-5px 4px 10px;
+  }
+
+  .hand{
+    justify-content:flex-start;
+  }
+
+  .card{
+    width:61px;
+    height:88px;
+  }
+
+  .hand .card{
+    flex-basis:61px;
+  }
+
+  .cardTop{
+    font-size:18px;
+    line-height:16px;
+  }
+
+  .cardCenter{
+    font-size:36px;
+  }
+
+  .cardBottom{
+    font-size:17px;
+  }
+
+  .faceCenter{
+    font-size:31px;
+  }
 }
-
 </style>
-
 </head>
 
 <body>
 
-<div class="container">
+<!-- =======================
+     LOBBY
+======================= -->
+
+<div id="lobby">
 
 <h1>🃏 Șeptică 3v3</h1>
 
-<div class="subtitle">
-6 jucători • Echipa 1 vs Echipa 2
-</div>
+<p>6 jucători • Echipa 1 vs Echipa 2</p>
 
+<input id="name" placeholder="Numele tău">
 
-<!-- LOBBY -->
-
-<div
-  id="lobby"
-  class="panel"
->
-
-<h2>Intră la masă</h2>
-
-<input
-  id="playerName"
-  placeholder="Numele tău"
-  maxlength="20"
->
-
-<br>
-
-<button
-  class="createButton"
-  onclick="createRoom()"
->
+<button class="mainButton" onclick="createRoom()">
 Creează cameră
 </button>
 
-<br><br>
-
 <input
-  id="roomInput"
-  placeholder="Cod cameră"
-  maxlength="6"
+  id="code"
   inputmode="numeric"
+  maxlength="6"
+  placeholder="Cod cameră"
 >
 
-<br>
-
 <button
-  class="joinButton"
+  class="mainButton secondaryButton"
   onclick="joinRoom()"
 >
 Intră în cameră
 </button>
 
+<p id="error"></p>
+
+</div>
+
+
+<!-- =======================
+     GAME
+======================= -->
+
+<div id="game" class="hidden">
+
+<div class="topbar">
+
+<div class="roomBox">
+
+<small>Cod cameră</small>
+
+<span id="roomCode" class="roomCode">
+------
+</span>
+
+</div>
+
+
+<div class="scoreBox">
+
+<div class="scoreTeam team1">
+ECHIPA 1
+<br>
+<span id="score1" class="scoreNumber">
+0
+</span>
+</div>
+
+<div class="scoreDash">
+-
+</div>
+
+<div class="scoreTeam team2">
+ECHIPA 2
+<br>
+<span id="score2" class="scoreNumber">
+0
+</span>
+</div>
+
+</div>
+
+
+<div class="hostBox">
+👑 Host
+</div>
+
+</div>
+
+
+<div class="gameLayout">
+
+<div>
+
+<div class="tableArea">
+
+<div class="gameTable">
+
+<div id="players"></div>
+
 <div
-  id="error"
-  class="error"
+  id="centerCards"
+  class="centerCards"
 ></div>
 
 </div>
 
+</div>
 
-<!-- JOC -->
+
+<div class="handArea">
 
 <div
-  id="game"
-  class="hidden"
->
-
-<!-- CAMERA -->
-
-<div class="panel">
-
-<div>
-Codul camerei
-</div>
-
-<div
-  id="roomCode"
-  class="roomCode"
->
-------
-</div>
-
-<div>
-Trimite acest cod celorlalți 5 jucători.
-</div>
-
-<br>
-
-<button
-  id="startButton"
-  class="startButton hidden"
-  onclick="startGame()"
->
-▶ Pornește jocul
-</button>
-
-</div>
-
-
-<!-- SCOR -->
-
-<div class="teams">
-
-<div class="team">
-
-<h2>Echipa 1</h2>
-
-<div>
-Jucător 1 • Jucător 3 • Jucător 5
-</div>
-
-<div
-  id="score1"
-  class="score"
->
-0
-</div>
-
-<div>
-puncte
-</div>
-
-</div>
-
-
-<div class="team">
-
-<h2>Echipa 2</h2>
-
-<div>
-Jucător 2 • Jucător 4 • Jucător 6
-</div>
-
-<div
-  id="score2"
-  class="score"
->
-0
-</div>
-
-<div>
-puncte
-</div>
-
-</div>
-
-</div>
-
-
-<!-- MESAJ -->
-
-<div
-  id="message"
-  class="panel message"
+  id="turnMessage"
+  class="turnMessage"
 >
 Așteptăm jucătorii...
 </div>
-
-
-<!-- JUCĂTORI -->
-
-<div class="panel">
-
-<h2>👥 Jucători</h2>
-
-<div
-  id="players"
-  class="players"
-></div>
-
-</div>
-
-
-<!-- MASA -->
-
-<div class="panel">
-
-<h2>🎴 Masa</h2>
-
-<div
-  id="table"
-  class="table"
-></div>
-
-</div>
-
-
-<!-- CĂRȚILE MELE -->
-
-<div class="panel">
-
-<h2>🃏 Cărțile mele</h2>
 
 <div
   id="hand"
@@ -549,6 +794,69 @@ Așteptăm jucătorii...
 
 </div>
 
+
+<div class="infoPanel">
+
+<div class="infoTitle">
+Prima carte
+</div>
+
+<div
+  id="firstCard"
+  class="infoValue"
+>
+-
+</div>
+
+
+<div class="infoTitle">
+Tăieri permise
+</div>
+
+<div
+  id="cutsAllowed"
+  class="infoValue"
+>
+7, 8
+</div>
+
+
+<div class="infoTitle">
+Cărți pe masă
+</div>
+
+<div
+  id="cardsPlayed"
+  class="infoValue"
+>
+0
+</div>
+
+
+<div class="infoTitle">
+Mesaj
+</div>
+
+<div
+  id="statusMessage"
+  class="infoValue"
+>
+Așteptăm...
+</div>
+
+</div>
+
+</div>
+
+
+<button
+  id="startButton"
+  class="hidden"
+  onclick="startGame()"
+>
+▶ Pornește jocul
+</button>
+
 </div>
 
 
@@ -556,55 +864,44 @@ Așteptăm jucătorii...
 
 <script>
 
-const socket = io();
+const socket=io();
 
-let roomCode = null;
+let roomCode=null;
+let mySeat=null;
+let state=null;
+let hand=[];
 
-let mySeat = null;
+const avatars=[
+  '🧑🏻',
+  '👨🏻',
+  '👩🏻',
+  '🧑🏻‍💻',
+  '👨🏻‍🦱',
+  '👩🏼'
+];
 
-let state = null;
-
-let myHand = [];
-
-
-/* =========================
-   ELEMENT
-========================= */
-
-function element(id) {
+function e(id){
   return document.getElementById(id);
 }
 
+/* =======================
+   ROOM
+======================= */
 
-/* =========================
-   CREATE ROOM
-========================= */
-
-function createRoom() {
-
-  const name =
-    element('playerName')
-      .value
-      .trim();
+function createRoom(){
 
   socket.emit(
     'createRoom',
     {
-      name
+      name:e('name').value.trim()
     },
+    response=>{
 
-    response => {
-
-      if (!response.ok) {
-
-        showError(
-          response.error
-        );
-
-        return;
+      if(!response.ok){
+        return showError(response.error);
       }
 
-      enterRoom(
+      enter(
         response.code,
         response.seat
       );
@@ -614,51 +911,21 @@ function createRoom() {
 
 }
 
-
-/* =========================
-   JOIN ROOM
-========================= */
-
-function joinRoom() {
-
-  const name =
-    element('playerName')
-      .value
-      .trim();
-
-  const code =
-    element('roomInput')
-      .value
-      .trim();
-
-  if (!code) {
-
-    showError(
-      'Introdu codul camerei.'
-    );
-
-    return;
-  }
+function joinRoom(){
 
   socket.emit(
     'joinRoom',
     {
-      code,
-      name
+      code:e('code').value.trim(),
+      name:e('name').value.trim()
     },
+    response=>{
 
-    response => {
-
-      if (!response.ok) {
-
-        showError(
-          response.error
-        );
-
-        return;
+      if(!response.ok){
+        return showError(response.error);
       }
 
-      enterRoom(
+      enter(
         response.code,
         response.seat
       );
@@ -668,55 +935,39 @@ function joinRoom() {
 
 }
 
+function enter(code,seat){
 
-/* =========================
-   ENTER ROOM
-========================= */
+  roomCode=code;
+  mySeat=seat;
 
-function enterRoom(
-  code,
-  seat
-) {
-
-  roomCode = code;
-
-  mySeat = seat;
-
-  element('lobby')
+  e('lobby')
     .classList
     .add('hidden');
 
-  element('game')
+  e('game')
     .classList
     .remove('hidden');
 
-  element('roomCode')
-    .textContent =
-    code;
+  e('roomCode').textContent=code;
 
 }
 
 
-/* =========================
-   START GAME
-========================= */
+/* =======================
+   START
+======================= */
 
-function startGame() {
+function startGame(){
 
   socket.emit(
     'startGame',
     {
-      code: roomCode
+      code:roomCode
     },
+    response=>{
 
-    response => {
-
-      if (!response.ok) {
-
-        alert(
-          response.error
-        );
-
+      if(!response.ok){
+        alert(response.error);
       }
 
     }
@@ -725,27 +976,22 @@ function startGame() {
 }
 
 
-/* =========================
+/* =======================
    PLAY CARD
-========================= */
+======================= */
 
-function playCard(index) {
+function playCard(index){
 
   socket.emit(
     'playCard',
     {
-      code: roomCode,
+      code:roomCode,
       index
     },
+    response=>{
 
-    response => {
-
-      if (!response.ok) {
-
-        alert(
-          response.error
-        );
-
+      if(!response.ok){
+        alert(response.error);
       }
 
     }
@@ -754,88 +1000,71 @@ function playCard(index) {
 }
 
 
-/* =========================
-   KICK PLAYER
-========================= */
+/* =======================
+   KICK
+======================= */
 
-function kickPlayer(seat) {
+function kickPlayer(seat){
 
-  if (
+  if(
     !confirm(
-      `Vrei să dai afară Jucătorul ${seat + 1}?`
+      `Dai afară Jucătorul ${seat+1}?`
     )
-  ) {
-
+  ){
     return;
-
   }
 
   socket.emit(
     'kickPlayer',
     {
-      code: roomCode,
+      code:roomCode,
       seat
     },
+    response=>{
 
-    response => {
-
-      if (!response.ok) {
-
-        alert(
-          response.error
-        );
-
+      if(!response.ok){
+        alert(response.error);
       }
 
     }
   );
 
 }
-
-
-/* =========================
-   AI FOST DAT AFARĂ
-========================= */
 
 socket.on(
   'kicked',
-  () => {
+  ()=>{
 
     alert(
-      'Host-ul te-a dat afară din cameră.'
+      'Host-ul te-a dat afară.'
     );
 
-    window.location.reload();
+    location.reload();
 
   }
 );
 
 
-/* =========================
-   STATE
-========================= */
+/* =======================
+   SOCKET STATE
+======================= */
 
 socket.on(
   'state',
-  newState => {
+  s=>{
 
-    state = newState;
+    state=s;
 
     render();
 
   }
 );
-
-
-/* =========================
-   CĂRȚILE MELE
-========================= */
 
 socket.on(
   'hand',
-  hand => {
+  h=>{
 
-    myHand = hand;
+    hand=h;
 
     render();
 
@@ -843,314 +1072,282 @@ socket.on(
 );
 
 
-/* =========================
-   RED CARD
-========================= */
+/* =======================
+   CARD HTML
+======================= */
 
-function isRed(card) {
+function cardHTML(card){
 
-  return (
-    card.suit === '♥' ||
-    card.suit === '♦'
+  const red=
+    card.suit==='♥' ||
+    card.suit==='♦';
+
+  let center=card.suit;
+
+  if(card.rank==='K'){
+    center='♚';
+  }
+
+  if(card.rank==='Q'){
+    center='♛';
+  }
+
+  if(card.rank==='J'){
+    center='♜';
+  }
+
+  return `
+    <div class="cardTop">
+      ${card.rank}<br>${card.suit}
+    </div>
+
+    <div class="cardCenter ${['J','Q','K'].includes(card.rank)?'faceCenter':''}">
+      ${center}
+    </div>
+
+    <div class="cardBottom">
+      ${card.rank}<br>${card.suit}
+    </div>
+  `;
+
+}
+
+function cardIsRed(card){
+
+  return(
+    card.suit==='♥' ||
+    card.suit==='♦'
   );
 
 }
 
 
-/* =========================
+/* =======================
    RENDER
-========================= */
+======================= */
 
-function render() {
+function render(){
 
-  if (!state) {
+  if(!state){
     return;
   }
 
-
-  /* SCOR */
-
-  element('score1')
-    .textContent =
+  e('score1').textContent=
     state.scoreA ?? 0;
 
-  element('score2')
-    .textContent =
+  e('score2').textContent=
     state.scoreB ?? 0;
 
+  e('statusMessage').textContent=
+    state.message || '';
 
-  /* MESAJ */
+  e('turnMessage').textContent=
+    state.started
+      ?
+      (
+        state.turn===mySeat
+        ? '🟢 Rândul tău'
+        : `Rândul Jucătorului ${state.turn+1}`
+      )
+      :
+      'Așteptăm jucătorii...';
 
-  element('message')
-    .textContent =
-    state.message ||
-    'Joc în desfășurare';
 
+  /* START */
 
-  /* START BUTTON */
+  const host=
+    socket.id===state.hostId;
 
-  const amIHost =
-    socket.id ===
-    state.hostId;
-
-  const sixPlayers =
-    state.players.length === 6;
-
-  const showStart =
-    amIHost &&
-    sixPlayers &&
-    !state.started;
-
-  element('startButton')
+  e('startButton')
     .classList
     .toggle(
       'hidden',
-      !showStart
+      !(
+        host &&
+        state.players.length===6 &&
+        !state.started
+      )
     );
 
 
-  /* JUCĂTORI */
+  /* PLAYERS */
 
-  const playersContainer =
-    element('players');
+  const players=e('players');
 
-  playersContainer.innerHTML = '';
-
+  players.innerHTML='';
 
   state.players.forEach(
-    (player,index) => {
+    (player,index)=>{
 
-      const box =
-        document.createElement(
-          'div'
-        );
+      const box=
+        document.createElement('div');
 
-      box.className =
-        'player';
+      box.className=
+        `player p${index}`;
 
-
-      if (
+      if(
         state.started &&
-        state.turn === index
-      ) {
-
-        box.classList
-          .add('active');
-
+        state.turn===index
+      ){
+        box.classList.add('active');
       }
 
+      box.innerHTML=`
 
-      const name =
-        player.name ||
-        `Jucător ${index + 1}`;
-
-
-      let html = `
+        <div class="avatar">
+          ${avatars[index]}
+        </div>
 
         <div class="playerName">
-
-          Jucător ${index + 1}
-
+          Jucător ${index+1}
+          ${index===mySeat?' (Tu)':''}
         </div>
 
-        <div>
+        <br>
 
-          ${name}
-
-        </div>
-
-        <div class="playerTeam">
-
+        <div class="playerTeam ${player.team===1?'t1':'t2'}">
           Echipa ${player.team}
-
         </div>
 
-        <div>
-
-          ${
-            state.handCounts[index] ?? 0
-          } cărți
-
+        <div class="cardCount">
+          ${state.handCounts[index] ?? 0} cărți
         </div>
+
+        ${
+          host &&
+          index!==0 &&
+          !state.started
+          ?
+          `
+          <button
+            class="kick"
+            onclick="kickPlayer(${index})"
+          >
+          ✕ Dă afară
+          </button>
+          `
+          :
+          ''
+        }
 
       `;
 
-
-      if (
-        state.started &&
-        state.turn === index
-      ) {
-
-        html += `
-
-          <div class="turnText">
-
-            ▶ Rândul lui
-
-          </div>
-
-        `;
-
-      }
-
-
-      /*
-        BUTON KICK
-
-        Îl vede doar host-ul.
-
-        Host-ul nu se poate
-        da singur afară.
-
-        Nu se poate da kick
-        după pornirea jocului.
-      */
-
-      if (
-        amIHost &&
-        index !== 0 &&
-        !state.started
-      ) {
-
-        html += `
-
-          <button
-            class="kickButton"
-            onclick="kickPlayer(${index})"
-          >
-
-            ✕ Dă afară
-
-          </button>
-
-        `;
-
-      }
-
-
-      box.innerHTML = html;
-
-      playersContainer
-        .appendChild(box);
+      players.appendChild(box);
 
     }
   );
 
 
-  /* MASĂ */
+  /* TABLE */
 
-  const tableContainer =
-    element('table');
-
-  tableContainer.innerHTML = '';
-
-
-  const cardsOnTable =
+  const table=
     state.table ||
     state.trick ||
     [];
 
+  const center=
+    e('centerCards');
 
-  cardsOnTable.forEach(
-    play => {
+  center.innerHTML='';
 
-      const cardButton =
-        document.createElement(
-          'button'
-        );
+  table.forEach(
+    (play,index)=>{
 
-      cardButton.className =
-        'card';
+      const card=
+        document.createElement('div');
 
+      card.className='card playedCard';
 
-      if (
-        isRed(play.card)
-      ) {
-
-        cardButton
-          .classList
-          .add('red');
-
+      if(cardIsRed(play.card)){
+        card.classList.add('red');
       }
 
+      const rotations=[
+        '-12deg',
+        '8deg',
+        '-4deg',
+        '13deg',
+        '-8deg',
+        '5deg'
+      ];
 
-      cardButton.disabled =
-        true;
+      card.style.setProperty(
+        '--r',
+        rotations[index % rotations.length]
+      );
 
+      card.innerHTML=
+        cardHTML(play.card);
 
-      cardButton.innerHTML =
-
-        `J${play.player + 1}<br>` +
-
-        `${play.card.rank}${play.card.suit}`;
-
-
-      tableContainer
-        .appendChild(
-          cardButton
-        );
+      center.appendChild(card);
 
     }
   );
 
 
-  /* MÂNA MEA */
-
-  const handContainer =
-    element('hand');
-
-  handContainer.innerHTML = '';
+  e('cardsPlayed').textContent=
+    table.length;
 
 
-  myHand.forEach(
-    (card,index) => {
+  if(
+    state.openingRank
+  ){
 
-      const cardButton =
-        document.createElement(
-          'button'
-        );
+    e('firstCard').textContent=
+      state.openingRank;
+
+    e('cutsAllowed').textContent=
+      `${state.openingRank}, 7 sau 8`;
+
+  }else{
+
+    e('firstCard').textContent='-';
+
+    e('cutsAllowed').textContent=
+      '7 și 8';
+
+  }
 
 
-      cardButton.className =
-        'card myCard';
+  /* HAND */
 
+  const myHand=e('hand');
 
-      if (
-        isRed(card)
-      ) {
+  myHand.innerHTML='';
 
-        cardButton
-          .classList
-          .add('red');
+  hand.forEach(
+    (card,index)=>{
+
+      const cardElement=
+        document.createElement('div');
+
+      cardElement.className='card';
+
+      if(cardIsRed(card)){
+        cardElement.classList.add('red');
+      }
+
+      const enabled=
+        state.started &&
+        state.turn===mySeat;
+
+      if(!enabled){
+        cardElement.classList.add('disabled');
+      }
+
+      cardElement.innerHTML=
+        cardHTML(card);
+
+      if(enabled){
+
+        cardElement.onclick=
+          ()=>playCard(index);
 
       }
 
-
-      cardButton.textContent =
-        card.rank +
-        card.suit;
-
-
-      /*
-        Poți apăsa cartea
-        numai când este
-        rândul tău.
-      */
-
-      cardButton.disabled =
-        !state.started ||
-        state.turn !== mySeat;
-
-
-      cardButton.onclick =
-        () =>
-          playCard(index);
-
-
-      handContainer
-        .appendChild(
-          cardButton
-        );
+      myHand.appendChild(
+        cardElement
+      );
 
     }
   );
@@ -1158,14 +1355,13 @@ function render() {
 }
 
 
-/* =========================
-   ERROR
-========================= */
+/* =======================
+   ERRORS
+======================= */
 
-function showError(message) {
+function showError(message){
 
-  element('error')
-    .textContent =
+  e('error').textContent=
     message;
 
 }
@@ -1173,5 +1369,4 @@ function showError(message) {
 </script>
 
 </body>
-
 </html>
