@@ -17,27 +17,28 @@ const rooms = new Map();
 
 const suits = ["♠", "♥", "♦", "♣"];
 
-/* =====================================================
-   HELPERS
-===================================================== */
+const BOT_DELAY = 2000;
+const BOT_DECISION_DELAY = 1500;
 
-function teamOf(seat) {
-  // J1, J3, J5 = Echipa 1
-  // J2, J4, J6 = Echipa 2
-  return seat % 2 === 0 ? 1 : 2;
-}
+/* =====================================================
+   GENERAL
+===================================================== */
 
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
+
+    [array[i], array[j]] = [
+      array[j],
+      array[i]
+    ];
   }
 }
 
 function makeDeck() {
   const deck = [];
 
-  // 4 de 7
+  // 4 x 7
   for (const suit of suits) {
     deck.push({
       rank: "7",
@@ -45,22 +46,31 @@ function makeDeck() {
     });
   }
 
-  // Doar 2 de 8
-  const randomSuits = [...suits];
-  shuffle(randomSuits);
+  // doar 2 x 8
+  const eightSuits = [...suits];
+  shuffle(eightSuits);
 
   deck.push({
     rank: "8",
-    suit: randomSuits[0]
+    suit: eightSuits[0]
   });
 
   deck.push({
     rank: "8",
-    suit: randomSuits[1]
+    suit: eightSuits[1]
   });
 
-  // 9, 10, J, Q, K, A = câte 4
-  for (const rank of ["9", "10", "J", "Q", "K", "A"]) {
+  // câte 4 din restul
+  for (
+    const rank of [
+      "9",
+      "10",
+      "J",
+      "Q",
+      "K",
+      "A"
+    ]
+  ) {
     for (const suit of suits) {
       deck.push({
         rank,
@@ -75,10 +85,16 @@ function makeDeck() {
 }
 
 function isPoint(card) {
-  return card.rank === "10" || card.rank === "A";
+  return (
+    card.rank === "10" ||
+    card.rank === "A"
+  );
 }
 
-function isCut(card, openingRank) {
+function isCut(
+  card,
+  openingRank
+) {
   return (
     card.rank === "7" ||
     card.rank === "8" ||
@@ -87,15 +103,16 @@ function isCut(card, openingRank) {
 }
 
 function countPoints(table) {
-  let points = 0;
-
-  for (const play of table) {
-    if (isPoint(play.card)) {
-      points++;
-    }
-  }
-
-  return points;
+  return table.reduce(
+    (sum, play) =>
+      sum +
+      (
+        isPoint(play.card)
+          ? 1
+          : 0
+      ),
+    0
+  );
 }
 
 function createRoomCode() {
@@ -103,7 +120,10 @@ function createRoomCode() {
 
   do {
     code = String(
-      Math.floor(100000 + Math.random() * 900000)
+      Math.floor(
+        100000 +
+        Math.random() * 900000
+      )
     );
   } while (rooms.has(code));
 
@@ -111,66 +131,148 @@ function createRoomCode() {
 }
 
 function firstFreeSeat(room) {
-  return room.players.findIndex(player => player === null);
-}
-
-function playerCount(room) {
-  return room.players.filter(Boolean).length;
-}
-
-function firstConnectedPlayer(room) {
-  return room.players.find(
-    player => player && player.connected
+  return room.players.findIndex(
+    player =>
+      player === null
   );
 }
 
-function nextSeat(currentSeat) {
-  return (currentSeat + 1) % 6;
+function playerCount(room) {
+  return room.players
+    .filter(Boolean)
+    .length;
 }
+
+function teamCount(
+  room,
+  team
+) {
+  return room.players
+    .filter(
+      player =>
+        player &&
+        player.team === team
+    )
+    .length;
+}
+
+function teamsAreValid(room) {
+  return (
+    teamCount(room, 1) === 3 &&
+    teamCount(room, 2) === 3
+  );
+}
+
+function firstHumanPlayer(room) {
+  return room.players.find(
+    player =>
+      player &&
+      !player.bot &&
+      player.connected
+  );
+}
+
+function nextSeat(seat) {
+  return (
+    seat + 1
+  ) % 6;
+}
+
+/* =====================================================
+   PUBLIC STATE
+===================================================== */
 
 function publicState(room) {
   return {
-    hostId: room.hostId,
+    hostId:
+      room.hostId,
 
-    started: room.started,
+    started:
+      room.started,
 
-    players: room.players.map((player, index) => {
-      if (!player) {
-        return null;
-      }
+    gameFinished:
+      room.gameFinished,
 
-      return {
-        name: player.name,
-        team: teamOf(index),
-        connected: player.connected
-      };
-    }),
+    players:
+      room.players.map(
+        player => {
 
-    handCounts: room.hands.map(hand => hand.length),
+          if (!player) {
+            return null;
+          }
 
-    scoreA: room.score1,
-    scoreB: room.score2,
+          return {
+            name:
+              player.name,
 
-    turn: room.turn,
+            team:
+              player.team,
 
-    opener: room.opener,
+            connected:
+              player.connected,
 
-    openingRank: room.openingRank,
+            bot:
+              !!player.bot
+          };
+        }
+      ),
 
-    table: room.table,
-    trick: room.table,
+    handCounts:
+      room.hands.map(
+        hand =>
+          hand.length
+      ),
 
-    controlTeam: room.controlTeam,
+    matchScore1:
+      room.matchScore1,
 
-    lastCutter: room.lastCutter,
+    matchScore2:
+      room.matchScore2,
 
-    cardsInCycle: room.cardsInCycle,
+    cardPoints1:
+      room.cardPoints1,
 
-    awaitingDecision: room.awaitingDecision,
+    cardPoints2:
+      room.cardPoints2,
 
-    continuationMode: room.continuationMode,
+    piles1:
+      room.piles1,
 
-    message: room.message
+    piles2:
+      room.piles2,
+
+    turn:
+      room.turn,
+
+    opener:
+      room.opener,
+
+    openingRank:
+      room.openingRank,
+
+    table:
+      room.table,
+
+    trick:
+      room.table,
+
+    awaitingDecision:
+      room.awaitingDecision,
+
+    continuationMode:
+      room.continuationMode,
+
+    lastResult:
+      room.lastResult,
+
+    history:
+      room.history,
+
+    roundNumber:
+      room.roundNumber,
+
+    message:
+      room.message
   };
 }
 
@@ -180,24 +282,36 @@ function sendState(room) {
     publicState(room)
   );
 
-  room.players.forEach((player, seat) => {
-    if (
-      player &&
-      player.connected &&
-      player.socketId
-    ) {
-      io.to(player.socketId).emit(
-        "hand",
-        room.hands[seat] || []
-      );
+  room.players.forEach(
+    (player, seat) => {
 
-      io.to(player.socketId).emit(
-        "seat",
-        seat
-      );
+      if (
+        player &&
+        !player.bot &&
+        player.connected &&
+        player.socketId
+      ) {
+        io
+          .to(player.socketId)
+          .emit(
+            "hand",
+            room.hands[seat]
+          );
+
+        io
+          .to(player.socketId)
+          .emit(
+            "seat",
+            seat
+          );
+      }
     }
-  });
+  );
 }
+
+/* =====================================================
+   GAME HELPERS
+===================================================== */
 
 function openerHasContinuation(room) {
   if (
@@ -207,100 +321,254 @@ function openerHasContinuation(room) {
     return false;
   }
 
-  const hand = room.hands[room.opener];
-
-  return hand.some(card =>
-    isCut(card, room.openingRank)
-  );
+  return room
+    .hands[room.opener]
+    .some(
+      card =>
+        isCut(
+          card,
+          room.openingRank
+        )
+    );
 }
 
 function gameIsFinished(room) {
   return room.hands.every(
-    hand => hand.length === 0
+    hand =>
+      hand.length === 0
   );
 }
 
 /* =====================================================
-   FINAL JOC
+   FINAL PARTIDĂ
 ===================================================== */
 
 function finishGame(room) {
   room.started = false;
-  room.awaitingDecision = false;
-  room.continuationMode = false;
 
-  if (room.score1 > room.score2) {
-    room.message =
-      `JOC TERMINAT — Echipa 1 câștigă ${room.score1}-${room.score2}!`;
-  } else if (room.score2 > room.score1) {
-    room.message =
-      `JOC TERMINAT — Echipa 2 câștigă ${room.score2}-${room.score1}!`;
-  } else {
-    room.message =
-      `JOC TERMINAT — Egalitate ${room.score1}-${room.score2}.`;
+  room.gameFinished = true;
+
+  room.awaitingDecision =
+    false;
+
+  room.continuationMode =
+    false;
+
+  let winnerTeam = null;
+  let loserTeam = null;
+
+  if (
+    room.cardPoints1 >
+    room.cardPoints2
+  ) {
+    winnerTeam = 1;
+    loserTeam = 2;
+
+    room.matchScore1++;
   }
-}
 
-/* =====================================================
-   FINAL RUNDA
-===================================================== */
+  else if (
+    room.cardPoints2 >
+    room.cardPoints1
+  ) {
+    winnerTeam = 2;
+    loserTeam = 1;
 
-function finishPile(room) {
-  const points = countPoints(room.table);
+    room.matchScore2++;
+  }
 
-  const winningTeam = room.controlTeam;
+  if (winnerTeam === null) {
+    room.lastResult =
+      `Egalitate ${room.cardPoints1}-${room.cardPoints2}`;
 
-  if (winningTeam === 1) {
-    room.score1 += points;
-  } else {
-    room.score2 += points;
+    room.message =
+      `Partida s-a terminat ${room.cardPoints1}-${room.cardPoints2}. Egalitate.`;
+
+    return;
+  }
+
+  const loserPiles =
+    loserTeam === 1
+      ? room.piles1
+      : room.piles2;
+
+  const loserPoints =
+    loserTeam === 1
+      ? room.cardPoints1
+      : room.cardPoints2;
+
+  let special = "";
+
+  /*
+    PIELE =
+    echipa pierzătoare
+    nu a luat nicio grămadă.
+  */
+
+  if (loserPiles === 0) {
+    special = "PIELE";
   }
 
   /*
-    IMPORTANT:
-    exact jucătorul care a făcut ultima tăiere
-    începe următoarea rundă.
+    BUZĂ =
+    echipa pierzătoare
+    a luat grămezi,
+    dar doar caraboabe,
+    deci 0 puncte.
   */
-  const winnerPlayer = room.lastCutter;
 
-  const winnerName =
-    winnerPlayer !== null &&
-    room.players[winnerPlayer]
-      ? room.players[winnerPlayer].name
-      : `Jucător ${winnerPlayer + 1}`;
+  else if (
+    loserPoints === 0
+  ) {
+    special = "BUZĂ";
+  }
+
+  room.lastResult =
+    special
+      ? `Echipa ${loserTeam}: ${special}`
+      : `Echipa ${winnerTeam} câștigă partida`;
 
   room.message =
-    `${winnerName} a luat cărțile pentru Echipa ${winningTeam}` +
+    `Partida s-a terminat ${room.cardPoints1}-${room.cardPoints2}. ` +
+    `Echipa ${winnerTeam} primește +1 la scor.` +
+    (
+      special
+        ? ` Echipa ${loserTeam}: ${special}.`
+        : ""
+    );
+}
+
+/* =====================================================
+   FINAL RUNDĂ / GRĂMADĂ
+===================================================== */
+
+function finishPile(room) {
+  const points =
+    countPoints(room.table);
+
+  const winnerSeat =
+    room.lastCutter;
+
+  const winnerPlayer =
+    room.players[winnerSeat];
+
+  const winnerTeam =
+    winnerPlayer.team;
+
+  if (winnerTeam === 1) {
+    room.cardPoints1 +=
+      points;
+
+    room.piles1++;
+  } else {
+    room.cardPoints2 +=
+      points;
+
+    room.piles2++;
+  }
+
+  /*
+    SALVĂM ISTORICUL
+  */
+
+  room.history.push({
+    round:
+      room.roundNumber,
+
+    openerSeat:
+      room.opener,
+
+    openerName:
+      room.players[
+        room.opener
+      ]?.name ||
+      "Jucător",
+
+    openingRank:
+      room.openingRank,
+
+    cards:
+      room.table.map(
+        play => ({
+          player:
+            play.player,
+
+          name:
+            room.players[
+              play.player
+            ]?.name ||
+            "Jucător",
+
+          rank:
+            play.card.rank,
+
+          suit:
+            play.card.suit,
+
+          cut:
+            play.cut
+        })
+      ),
+
+    winnerSeat,
+
+    winnerName:
+      winnerPlayer?.name ||
+      "Jucător",
+
+    winnerTeam,
+
+    points
+  });
+
+  room.message =
+    `${winnerPlayer?.name || "Jucătorul"} a luat cărțile pentru Echipa ${winnerTeam}. ` +
     (
       points > 0
-        ? ` — ${points} punct${points === 1 ? "" : "e"}.`
-        : "."
+        ? `${points} punct${points === 1 ? "" : "e"} în grămadă.`
+        : "0 puncte în grămadă."
     );
 
   room.table = [];
 
-  room.openingRank = null;
+  room.openingRank =
+    null;
 
-  room.cardsInCycle = 0;
+  room.cardsInCycle =
+    0;
 
-  room.awaitingDecision = false;
+  room.awaitingDecision =
+    false;
 
-  room.continuationMode = false;
+  room.continuationMode =
+    false;
 
-  if (gameIsFinished(room)) {
+  if (
+    gameIsFinished(room)
+  ) {
     finishGame(room);
     return;
   }
 
   /*
-    Ultimul cutter începe runda următoare.
+    Jucătorul care a făcut
+    ultima tăiere începe
+    următoarea rundă.
   */
-  room.opener = winnerPlayer;
-  room.turn = winnerPlayer;
 
-  room.controlTeam = teamOf(winnerPlayer);
+  room.roundNumber++;
 
-  room.lastCutter = winnerPlayer;
+  room.opener =
+    winnerSeat;
+
+  room.turn =
+    winnerSeat;
+
+  room.controlTeam =
+    winnerTeam;
+
+  room.lastCutter =
+    winnerSeat;
 }
 
 /* =====================================================
@@ -308,792 +576,1645 @@ function finishPile(room) {
 ===================================================== */
 
 function afterCardPlayed(room) {
-  /*
-    În fiecare ciclu joacă 6 cărți.
-  */
-  if (room.cardsInCycle < 6) {
-    room.turn = nextSeat(room.turn);
+  if (
+    room.cardsInCycle < 6
+  ) {
+    room.turn =
+      nextSeat(
+        room.turn
+      );
+
     return;
   }
 
   /*
-    Toți cei 6 au jucat.
-
-    Acum verificăm dacă jucătorul care
-    a început runda are:
-    - aceeași carte ca prima
-    - 7
-    - 8
+    După 6 cărți,
+    opener-ul decide
+    doar dacă poate continua.
   */
 
-  if (openerHasContinuation(room)) {
-    /*
-      NU continuăm automat.
+  if (
+    openerHasContinuation(room)
+  ) {
+    room.awaitingDecision =
+      true;
 
-      Jucătorul primește:
-      CONTINUĂ RUNDA
-      OPREȘTE RUNDA
-    */
-    room.awaitingDecision = true;
+    room.continuationMode =
+      false;
 
-    room.continuationMode = false;
-
-    room.turn = room.opener;
-
-    const openerPlayer =
-      room.players[room.opener];
+    room.turn =
+      room.opener;
 
     room.message =
-      `${openerPlayer.name} poate continua runda sau o poate opri.`;
+      `${room.players[room.opener].name} poate continua sau opri runda.`;
 
     return;
   }
 
-  /*
-    Dacă NU are nicio carte cu care să continue,
-    runda se termină automat.
-  */
   finishPile(room);
+}
+
+/* =====================================================
+   START PARTIDĂ INTERN
+===================================================== */
+
+function startCurrentGame(room) {
+  const deck =
+    makeDeck();
+
+  room.hands =
+    Array.from(
+      { length: 6 },
+      () => []
+    );
+
+  for (
+    let round = 0;
+    round < 5;
+    round++
+  ) {
+    for (
+      let seat = 0;
+      seat < 6;
+      seat++
+    ) {
+      room.hands[
+        seat
+      ].push(
+        deck.pop()
+      );
+    }
+  }
+
+  room.cardPoints1 =
+    0;
+
+  room.cardPoints2 =
+    0;
+
+  room.piles1 =
+    0;
+
+  room.piles2 =
+    0;
+
+  room.table =
+    [];
+
+  room.history =
+    [];
+
+  room.roundNumber =
+    1;
+
+  room.cardsInCycle =
+    0;
+
+  room.awaitingDecision =
+    false;
+
+  room.continuationMode =
+    false;
+
+  room.openingRank =
+    null;
+
+  /*
+    Doar prima rundă
+    începe Seat 0.
+  */
+
+  room.opener =
+    0;
+
+  room.turn =
+    0;
+
+  room.controlTeam =
+    room.players[0].team;
+
+  room.lastCutter =
+    null;
+
+  room.gameFinished =
+    false;
+
+  room.lastResult =
+    "";
+
+  room.started =
+    true;
+
+  room.message =
+    `${room.players[0].name} începe prima rundă.`;
+}
+
+/* =====================================================
+   BOȚI
+===================================================== */
+
+function scheduleBot(room) {
+  if (!room.started) {
+    return;
+  }
+
+  const player =
+    room.players[
+      room.turn
+    ];
+
+  if (
+    !player ||
+    !player.bot
+  ) {
+    return;
+  }
+
+  setTimeout(
+    () => {
+      runBot(room);
+    },
+    BOT_DELAY
+  );
+}
+
+function runBot(room) {
+  if (!room.started) {
+    return;
+  }
+
+  const seat =
+    room.turn;
+
+  const bot =
+    room.players[seat];
+
+  if (
+    !bot ||
+    !bot.bot
+  ) {
+    return;
+  }
+
+  /*
+    BOTUL DECIDE
+  */
+
+  if (
+    room.awaitingDecision &&
+    seat === room.opener
+  ) {
+    setTimeout(
+      () => {
+
+        if (
+          !room.started ||
+          !room.awaitingDecision
+        ) {
+          return;
+        }
+
+        if (
+          openerHasContinuation(
+            room
+          )
+        ) {
+          room.awaitingDecision =
+            false;
+
+          room.continuationMode =
+            true;
+
+          room.message =
+            `${bot.name} a ales să continue.`;
+
+          sendState(room);
+
+          setTimeout(
+            () => {
+              runBot(room);
+            },
+            BOT_DECISION_DELAY
+          );
+
+          return;
+        }
+
+        finishPile(room);
+
+        sendState(room);
+
+        scheduleBot(room);
+      },
+      BOT_DECISION_DELAY
+    );
+
+    return;
+  }
+
+  const hand =
+    room.hands[seat];
+
+  if (
+    !hand ||
+    hand.length === 0
+  ) {
+    return;
+  }
+
+  let index = 0;
+
+  /*
+    Dacă e continuare,
+    obligatoriu tăiere validă.
+  */
+
+  if (
+    room.continuationMode
+  ) {
+    index =
+      hand.findIndex(
+        card =>
+          isCut(
+            card,
+            room.openingRank
+          )
+      );
+
+    if (index === -1) {
+      finishPile(room);
+
+      sendState(room);
+
+      scheduleBot(room);
+
+      return;
+    }
+
+    room.cardsInCycle =
+      0;
+
+    room.continuationMode =
+      false;
+  }
+
+  /*
+    Botul preferă o tăiere,
+    dar nu instant.
+  */
+
+  else if (
+    room.table.length > 0
+  ) {
+    const cuttingIndex =
+      hand.findIndex(
+        card =>
+          isCut(
+            card,
+            room.openingRank
+          )
+      );
+
+    if (
+      cuttingIndex !== -1
+    ) {
+      index =
+        cuttingIndex;
+    }
+  }
+
+  const card =
+    hand[index];
+
+  hand.splice(
+    index,
+    1
+  );
+
+  if (
+    room.table.length === 0
+  ) {
+    room.opener =
+      seat;
+
+    room.openingRank =
+      card.rank;
+
+    room.controlTeam =
+      bot.team;
+
+    room.lastCutter =
+      seat;
+  }
+
+  const cut =
+    isCut(
+      card,
+      room.openingRank
+    );
+
+  if (cut) {
+    room.controlTeam =
+      bot.team;
+
+    room.lastCutter =
+      seat;
+
+    room.message =
+      `${bot.name} a tăiat. Echipa ${bot.team} are momentan cărțile.`;
+  } else {
+    room.message =
+      `${bot.name} a jucat ${card.rank}${card.suit}.`;
+  }
+
+  room.table.push({
+    player:
+      seat,
+
+    card,
+
+    cut
+  });
+
+  room.cardsInCycle++;
+
+  afterCardPlayed(room);
+
+  sendState(room);
+
+  scheduleBot(room);
 }
 
 /* =====================================================
    SOCKET
 ===================================================== */
 
-io.on("connection", socket => {
+io.on(
+  "connection",
+  socket => {
 
-  /* ===================================================
-     CREATE ROOM
-  =================================================== */
+    /* =========================
+       CREATE ROOM
+    ========================= */
 
-  socket.on(
-    "createRoom",
-    ({ name }, callback) => {
+    socket.on(
+      "createRoom",
+      (
+        {
+          name,
+          team
+        },
+        callback
+      ) => {
 
-      const code = createRoomCode();
+        team =
+          Number(team);
 
-      const playerName =
-        String(name || "").trim() ||
-        "Jucător 1";
+        if (
+          team !== 1 &&
+          team !== 2
+        ) {
+          return callback({
+            ok:
+              false,
 
-      const players = [
-        null,
-        null,
-        null,
-        null,
-        null,
-        null
-      ];
+            error:
+              "Alege Echipa 1 sau Echipa 2."
+          });
+        }
 
-      players[0] = {
-        socketId: socket.id,
-        name: playerName,
-        connected: true
-      };
+        const code =
+          createRoomCode();
 
-      const room = {
-        code,
+        const playerName =
+          String(
+            name || ""
+          ).trim() ||
+          "Jucător";
 
-        hostId: socket.id,
+        const players =
+          Array(6).fill(null);
 
-        players,
+        players[0] = {
+          socketId:
+            socket.id,
 
-        hands: [
-          [],
-          [],
-          [],
-          [],
-          [],
-          []
-        ],
+          name:
+            playerName,
 
-        started: false,
+          team,
 
-        score1: 0,
-        score2: 0,
+          connected:
+            true,
 
-        turn: 0,
+          bot:
+            false
+        };
 
-        opener: 0,
+        const room = {
+          code,
 
-        openingRank: null,
+          hostId:
+            socket.id,
 
-        table: [],
+          players,
 
-        controlTeam: 1,
+          hands:
+            Array.from(
+              { length: 6 },
+              () => []
+            ),
 
-        lastCutter: null,
+          started:
+            false,
 
-        cardsInCycle: 0,
+          gameFinished:
+            false,
 
-        awaitingDecision: false,
+          matchScore1:
+            0,
 
-        continuationMode: false,
+          matchScore2:
+            0,
 
-        message: "1/6 jucători la masă."
-      };
+          cardPoints1:
+            0,
 
-      rooms.set(code, room);
+          cardPoints2:
+            0,
 
-      socket.join(code);
+          piles1:
+            0,
 
-      callback({
-        ok: true,
-        code,
-        seat: 0
-      });
+          piles2:
+            0,
 
-      sendState(room);
-    }
-  );
+          turn:
+            0,
 
-  /* ===================================================
-     JOIN ROOM
-  =================================================== */
+          opener:
+            0,
 
-  socket.on(
-    "joinRoom",
-    ({ code, name }, callback) => {
+          openingRank:
+            null,
 
-      code = String(code || "").trim();
+          table:
+            [],
 
-      const room = rooms.get(code);
+          controlTeam:
+            team,
 
-      if (!room) {
-        return callback({
-          ok: false,
-          error: "Camera nu există."
+          lastCutter:
+            null,
+
+          cardsInCycle:
+            0,
+
+          awaitingDecision:
+            false,
+
+          continuationMode:
+            false,
+
+          history:
+            [],
+
+          roundNumber:
+            1,
+
+          lastResult:
+            "",
+
+          message:
+            "Camera a fost creată."
+        };
+
+        rooms.set(
+          code,
+          room
+        );
+
+        socket.join(
+          code
+        );
+
+        callback({
+          ok:
+            true,
+
+          code,
+
+          seat:
+            0
         });
-      }
 
-      if (room.started) {
-        return callback({
-          ok: false,
-          error: "Jocul a început deja."
+        sendState(room);
+      }
+    );
+
+    /* =========================
+       JOIN ROOM
+    ========================= */
+
+    socket.on(
+      "joinRoom",
+      (
+        {
+          code,
+          name,
+          team
+        },
+        callback
+      ) => {
+
+        code =
+          String(
+            code || ""
+          ).trim();
+
+        team =
+          Number(team);
+
+        const room =
+          rooms.get(code);
+
+        if (!room) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              "Camera nu există."
+          });
+        }
+
+        if (
+          room.started
+        ) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              "Partida a început deja."
+          });
+        }
+
+        if (
+          team !== 1 &&
+          team !== 2
+        ) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              "Alege o echipă."
+          });
+        }
+
+        if (
+          teamCount(
+            room,
+            team
+          ) >= 3
+        ) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              `Echipa ${team} are deja 3 jucători.`
+          });
+        }
+
+        const seat =
+          firstFreeSeat(room);
+
+        if (
+          seat === -1
+        ) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              "Camera este plină."
+          });
+        }
+
+        const playerName =
+          String(
+            name || ""
+          ).trim() ||
+          "Jucător";
+
+        room.players[
+          seat
+        ] = {
+          socketId:
+            socket.id,
+
+          name:
+            playerName,
+
+          team,
+
+          connected:
+            true,
+
+          bot:
+            false
+        };
+
+        socket.join(
+          code
+        );
+
+        room.message =
+          `${playerCount(room)}/6 jucători la masă.`;
+
+        callback({
+          ok:
+            true,
+
+          code,
+
+          seat
         });
+
+        sendState(room);
       }
+    );
 
-      const seat = firstFreeSeat(room);
+    /* =========================
+       SCHIMBĂ ECHIPA
+    ========================= */
 
-      if (seat === -1) {
-        return callback({
-          ok: false,
-          error: "Camera este plină."
-        });
-      }
+    socket.on(
+      "changeTeam",
+      (
+        {
+          code,
+          team
+        },
+        callback
+      ) => {
 
-      const playerName =
-        String(name || "").trim() ||
-        `Jucător ${seat + 1}`;
-
-      room.players[seat] = {
-        socketId: socket.id,
-        name: playerName,
-        connected: true
-      };
-
-      socket.join(code);
-
-      const count = playerCount(room);
-
-      room.message =
-        count === 6
-          ? "Toți cei 6 jucători sunt la masă."
-          : `${count}/6 jucători la masă.`;
-
-      callback({
-        ok: true,
-        code,
-        seat
-      });
-
-      sendState(room);
-    }
-  );
-
-  /* ===================================================
-     START GAME
-  =================================================== */
-
-  socket.on(
-    "startGame",
-    ({ code }, callback) => {
-
-      const room =
-        rooms.get(String(code));
-
-      if (!room) {
-        return callback({
-          ok: false,
-          error: "Camera nu există."
-        });
-      }
-
-      if (socket.id !== room.hostId) {
-        return callback({
-          ok: false,
-          error: "Doar host-ul poate porni jocul."
-        });
-      }
-
-      if (playerCount(room) !== 6) {
-        return callback({
-          ok: false,
-          error: "Trebuie să fie exact 6 jucători."
-        });
-      }
-
-      const deck = makeDeck();
-
-      room.hands = [
-        [],
-        [],
-        [],
-        [],
-        [],
-        []
-      ];
-
-      /*
-        30 cărți:
-        5 pentru fiecare din cei 6 jucători.
-      */
-      for (let round = 0; round < 5; round++) {
-        for (let seat = 0; seat < 6; seat++) {
-          room.hands[seat].push(
-            deck.pop()
+        const room =
+          rooms.get(
+            String(code)
           );
-        }
-      }
 
-      room.score1 = 0;
-      room.score2 = 0;
-
-      room.table = [];
-
-      room.cardsInCycle = 0;
-
-      room.awaitingDecision = false;
-
-      room.continuationMode = false;
-
-      room.openingRank = null;
-
-      /*
-        Prima rundă începe Jucătorul 1.
-
-        După aceea începe exact jucătorul
-        care ia cărțile.
-      */
-      room.opener = 0;
-      room.turn = 0;
-
-      room.controlTeam = 1;
-
-      room.lastCutter = null;
-
-      room.started = true;
-
-      room.message =
-        `${room.players[0].name} începe prima rundă.`;
-
-      callback({
-        ok: true
-      });
-
-      sendState(room);
-    }
-  );
-
-  /* ===================================================
-     CONTINUĂ RUNDA
-  =================================================== */
-
-  socket.on(
-    "continueRound",
-    ({ code }, callback) => {
-
-      const room =
-        rooms.get(String(code));
-
-      if (!room) {
-        return callback({
-          ok: false,
-          error: "Camera nu există."
-        });
-      }
-
-      if (!room.started) {
-        return callback({
-          ok: false,
-          error: "Jocul nu a început."
-        });
-      }
-
-      const seat =
-        room.players.findIndex(
-          player =>
-            player &&
-            player.socketId === socket.id
-        );
-
-      if (seat !== room.opener) {
-        return callback({
-          ok: false,
-          error:
-            "Doar jucătorul care a început runda poate decide."
-        });
-      }
-
-      if (!room.awaitingDecision) {
-        return callback({
-          ok: false,
-          error:
-            "Nu trebuie să alegi acum."
-        });
-      }
-
-      if (!openerHasContinuation(room)) {
-        return callback({
-          ok: false,
-          error:
-            "Nu ai nicio carte cu care să continui."
-        });
-      }
-
-      /*
-        Acum jucătorul trebuie să aleagă din mână
-        o carte validă:
-        openingRank / 7 / 8.
-      */
-      room.awaitingDecision = false;
-
-      room.continuationMode = true;
-
-      room.turn = room.opener;
-
-      room.message =
-        `${room.players[seat].name} a ales să continue. Trebuie să joace ${room.openingRank}, 7 sau 8.`;
-
-      callback({
-        ok: true
-      });
-
-      sendState(room);
-    }
-  );
-
-  /* ===================================================
-     OPREȘTE RUNDA
-  =================================================== */
-
-  socket.on(
-    "stopRound",
-    ({ code }, callback) => {
-
-      const room =
-        rooms.get(String(code));
-
-      if (!room) {
-        return callback({
-          ok: false,
-          error: "Camera nu există."
-        });
-      }
-
-      const seat =
-        room.players.findIndex(
-          player =>
-            player &&
-            player.socketId === socket.id
-        );
-
-      if (seat !== room.opener) {
-        return callback({
-          ok: false,
-          error:
-            "Doar jucătorul care a început runda poate decide."
-        });
-      }
-
-      if (!room.awaitingDecision) {
-        return callback({
-          ok: false,
-          error:
-            "Runda nu așteaptă o decizie."
-        });
-      }
-
-      room.awaitingDecision = false;
-
-      room.continuationMode = false;
-
-      /*
-        Echipa care are ultima tăiere
-        ia toate cărțile.
-      */
-      finishPile(room);
-
-      callback({
-        ok: true
-      });
-
-      sendState(room);
-    }
-  );
-
-  /* ===================================================
-     PLAY CARD
-  =================================================== */
-
-  socket.on(
-    "playCard",
-    ({ code, index }, callback) => {
-
-      const room =
-        rooms.get(String(code));
-
-      if (!room) {
-        return callback({
-          ok: false,
-          error: "Camera nu există."
-        });
-      }
-
-      if (!room.started) {
-        return callback({
-          ok: false,
-          error: "Jocul nu a început."
-        });
-      }
-
-      const seat =
-        room.players.findIndex(
-          player =>
-            player &&
-            player.socketId === socket.id
-        );
-
-      if (seat === -1) {
-        return callback({
-          ok: false,
-          error:
-            "Nu ești în această cameră."
-        });
-      }
-
-      /*
-        Când așteptăm Continue / Stop,
-        nu se poate pune carte direct.
-      */
-      if (room.awaitingDecision) {
-        return callback({
-          ok: false,
-          error:
-            "Mai întâi alege Continuă runda sau Oprește runda."
-        });
-      }
-
-      if (seat !== room.turn) {
-        return callback({
-          ok: false,
-          error: "Nu este rândul tău."
-        });
-      }
-
-      const hand =
-        room.hands[seat];
-
-      index = Number(index);
-
-      if (
-        !Number.isInteger(index) ||
-        index < 0 ||
-        index >= hand.length
-      ) {
-        return callback({
-          ok: false,
-          error: "Carte invalidă."
-        });
-      }
-
-      const card =
-        hand[index];
-
-      /*
-        Dacă opener-ul a ales CONTINUĂ,
-        cartea lui trebuie obligatoriu să fie:
-        - aceeași valoare cu prima carte
-        - 7
-        - 8
-      */
-      if (room.continuationMode) {
-
-        if (seat !== room.opener) {
+        if (!room) {
           return callback({
-            ok: false,
+            ok:
+              false,
+
             error:
-              "Doar jucătorul care a început poate continua."
+              "Camera nu există."
           });
         }
 
-        if (!isCut(card, room.openingRank)) {
+        if (
+          room.started
+        ) {
           return callback({
-            ok: false,
+            ok:
+              false,
+
             error:
-              `Poți continua doar cu ${room.openingRank}, 7 sau 8.`
+              "Nu poți schimba echipa după start."
           });
         }
 
-        /*
-          Începe un nou ciclu.
-          Cartea opener-ului va fi prima din cele 6.
-        */
-        room.cardsInCycle = 0;
+        team =
+          Number(team);
 
-        room.continuationMode = false;
-      }
+        if (
+          team !== 1 &&
+          team !== 2
+        ) {
+          return callback({
+            ok:
+              false,
 
-      /*
-        Scoatem cartea.
-      */
-      hand.splice(index, 1);
-
-      /*
-        Prima carte a unei runde NOI.
-      */
-      if (room.table.length === 0) {
-
-        room.opener = seat;
-
-        room.openingRank =
-          card.rank;
-
-        room.controlTeam =
-          teamOf(seat);
-
-        /*
-          Dacă nimeni nu mai taie după el,
-          opener-ul ia cărțile.
-        */
-        room.lastCutter =
-          seat;
-
-        room.message =
-          `${room.players[seat].name} a deschis cu ${card.rank}.`;
-      }
-
-      /*
-        Verificăm dacă această carte taie.
-      */
-      const cut =
-        isCut(
-          card,
-          room.openingRank
-        );
-
-      if (cut) {
-        room.controlTeam =
-          teamOf(seat);
-
-        room.lastCutter =
-          seat;
-
-        room.message =
-          `${room.players[seat].name} a tăiat. Echipa ${room.controlTeam} are momentan cărțile.`;
-      }
-
-      room.table.push({
-        player: seat,
-        card,
-        cut
-      });
-
-      room.cardsInCycle++;
-
-      afterCardPlayed(room);
-
-      callback({
-        ok: true
-      });
-
-      sendState(room);
-    }
-  );
-
-  /* ===================================================
-     KICK
-  =================================================== */
-
-  socket.on(
-    "kickPlayer",
-    ({ code, seat }, callback) => {
-
-      const room =
-        rooms.get(String(code));
-
-      if (!room) {
-        return callback({
-          ok: false,
-          error: "Camera nu există."
-        });
-      }
-
-      if (socket.id !== room.hostId) {
-        return callback({
-          ok: false,
-          error:
-            "Doar host-ul poate da afară jucători."
-        });
-      }
-
-      if (room.started) {
-        return callback({
-          ok: false,
-          error:
-            "Nu poți da afară jucători după ce partida a început."
-        });
-      }
-
-      seat = Number(seat);
-
-      if (
-        !Number.isInteger(seat) ||
-        seat < 0 ||
-        seat > 5
-      ) {
-        return callback({
-          ok: false,
-          error: "Jucător invalid."
-        });
-      }
-
-      const player =
-        room.players[seat];
-
-      if (!player) {
-        return callback({
-          ok: false,
-          error:
-            "Locul este deja liber."
-        });
-      }
-
-      if (player.socketId === room.hostId) {
-        return callback({
-          ok: false,
-          error:
-            "Host-ul nu se poate da singur afară."
-        });
-      }
-
-      io.to(player.socketId).emit(
-        "kicked"
-      );
-
-      room.players[seat] = null;
-
-      room.hands[seat] = [];
-
-      room.message =
-        `${player.name} a fost dat afară din cameră.`;
-
-      callback({
-        ok: true
-      });
-
-      sendState(room);
-    }
-  );
-
-  /* ===================================================
-     DISCONNECT
-  =================================================== */
-
-  socket.on(
-    "disconnect",
-    () => {
-
-      for (const room of rooms.values()) {
+            error:
+              "Echipă invalidă."
+          });
+        }
 
         const seat =
           room.players.findIndex(
             player =>
               player &&
-              player.socketId === socket.id
+              player.socketId ===
+                socket.id
           );
 
-        if (seat === -1) {
-          continue;
+        if (
+          seat === -1
+        ) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              "Nu ești în cameră."
+          });
         }
 
         const player =
-          room.players[seat];
+          room.players[
+            seat
+          ];
 
-        /*
-          ÎNAINTE DE START:
-          dispare complet și slotul devine liber.
-        */
-        if (!room.started) {
-
-          room.players[seat] = null;
-
-          room.hands[seat] = [];
-
-          room.message =
-            `${player.name} a ieșit din cameră.`;
-
-          /*
-            Dacă host-ul pleacă,
-            alt jucător devine host.
-          */
-          if (socket.id === room.hostId) {
-
-            const newHost =
-              firstConnectedPlayer(room);
-
-            if (newHost) {
-
-              room.hostId =
-                newHost.socketId;
-
-              room.message +=
-                ` ${newHost.name} este noul host.`;
-
-            } else {
-
-              rooms.delete(room.code);
-
-              continue;
-            }
-          }
-
-          sendState(room);
-
-          continue;
+        if (
+          player.team ===
+          team
+        ) {
+          return callback({
+            ok:
+              true
+          });
         }
 
-        /*
-          DUPĂ START:
-          nu îi ștergem cărțile.
-        */
-        player.connected = false;
+        if (
+          teamCount(
+            room,
+            team
+          ) >= 3
+        ) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              `Echipa ${team} este plină.`
+          });
+        }
+
+        player.team =
+          team;
 
         room.message =
-          `${player.name} s-a deconectat.`;
+          `${player.name} a trecut în Echipa ${team}.`;
+
+        callback({
+          ok:
+            true
+        });
 
         sendState(room);
       }
-    }
-  );
-});
+    );
 
-/* =====================================================
-   START SERVER
-===================================================== */
+    /* =========================
+       BOȚI + START AUTOMAT
+    ========================= */
+
+    socket.on(
+      "fillWithBots",
+      (
+        { code },
+        callback
+      ) => {
+
+        const room =
+          rooms.get(
+            String(code)
+          );
+
+        if (!room) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              "Camera nu există."
+          });
+        }
+
+        if (
+          socket.id !==
+          room.hostId
+        ) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              "Doar host-ul poate porni testul."
+          });
+        }
+
+        if (
+          room.started
+        ) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              "Partida este deja pornită."
+          });
+        }
+
+        /*
+          Umplem exact până la
+          3 vs 3.
+        */
+
+        for (
+          let team = 1;
+          team <= 2;
+          team++
+        ) {
+          while (
+            teamCount(
+              room,
+              team
+            ) < 3
+          ) {
+            const seat =
+              firstFreeSeat(
+                room
+              );
+
+            if (
+              seat === -1
+            ) {
+              break;
+            }
+
+            room.players[
+              seat
+            ] = {
+              socketId:
+                null,
+
+              name:
+                `Bot ${seat + 1}`,
+
+              team,
+
+              connected:
+                true,
+
+              bot:
+                true
+            };
+          }
+        }
+
+        if (
+          !teamsAreValid(
+            room
+          )
+        ) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              "Nu s-au putut forma echipe 3 vs 3."
+          });
+        }
+
+        startCurrentGame(
+          room
+        );
+
+        callback({
+          ok:
+            true
+        });
+
+        sendState(room);
+
+        scheduleBot(room);
+      }
+    );
+
+    /* =========================
+       START NORMAL
+    ========================= */
+
+    socket.on(
+      "startGame",
+      (
+        { code },
+        callback
+      ) => {
+
+        const room =
+          rooms.get(
+            String(code)
+          );
+
+        if (!room) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              "Camera nu există."
+          });
+        }
+
+        if (
+          socket.id !==
+          room.hostId
+        ) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              "Doar host-ul poate porni."
+          });
+        }
+
+        if (
+          playerCount(room) !==
+          6
+        ) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              "Trebuie să fie 6 jucători."
+          });
+        }
+
+        if (
+          !teamsAreValid(
+            room
+          )
+        ) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              "Trebuie să fie exact 3 jucători în fiecare echipă."
+          });
+        }
+
+        startCurrentGame(
+          room
+        );
+
+        callback({
+          ok:
+            true
+        });
+
+        sendState(room);
+
+        scheduleBot(room);
+      }
+    );
+
+    /* =========================
+       CONTINUE
+    ========================= */
+
+    socket.on(
+      "continueRound",
+      (
+        { code },
+        callback
+      ) => {
+
+        const room =
+          rooms.get(
+            String(code)
+          );
+
+        if (!room) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              "Camera nu există."
+          });
+        }
+
+        const seat =
+          room.players.findIndex(
+            player =>
+              player &&
+              player.socketId ===
+                socket.id
+          );
+
+        if (
+          seat !==
+            room.opener ||
+          !room.awaitingDecision
+        ) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              "Nu poți decide acum."
+          });
+        }
+
+        if (
+          !openerHasContinuation(
+            room
+          )
+        ) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              "Nu ai cu ce continua."
+          });
+        }
+
+        room.awaitingDecision =
+          false;
+
+        room.continuationMode =
+          true;
+
+        room.turn =
+          room.opener;
+
+        room.message =
+          `${room.players[seat].name} continuă runda.`;
+
+        callback({
+          ok:
+            true
+        });
+
+        sendState(room);
+      }
+    );
+
+    /* =========================
+       STOP ROUND
+    ========================= */
+
+    socket.on(
+      "stopRound",
+      (
+        { code },
+        callback
+      ) => {
+
+        const room =
+          rooms.get(
+            String(code)
+          );
+
+        if (!room) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              "Camera nu există."
+          });
+        }
+
+        const seat =
+          room.players.findIndex(
+            player =>
+              player &&
+              player.socketId ===
+                socket.id
+          );
+
+        if (
+          seat !==
+            room.opener ||
+          !room.awaitingDecision
+        ) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              "Nu poți opri acum."
+          });
+        }
+
+        finishPile(
+          room
+        );
+
+        callback({
+          ok:
+            true
+        });
+
+        sendState(room);
+
+        scheduleBot(room);
+      }
+    );
+
+    /* =========================
+       PLAY CARD
+    ========================= */
+
+    socket.on(
+      "playCard",
+      (
+        {
+          code,
+          index
+        },
+        callback
+      ) => {
+
+        const room =
+          rooms.get(
+            String(code)
+          );
+
+        if (!room) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              "Camera nu există."
+          });
+        }
+
+        const seat =
+          room.players.findIndex(
+            player =>
+              player &&
+              player.socketId ===
+                socket.id
+          );
+
+        if (
+          seat === -1
+        ) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              "Nu ești în cameră."
+          });
+        }
+
+        if (
+          !room.started ||
+          seat !== room.turn
+        ) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              "Nu este rândul tău."
+          });
+        }
+
+        if (
+          room.awaitingDecision
+        ) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              "Alege Continuă sau Oprește."
+          });
+        }
+
+        const hand =
+          room.hands[
+            seat
+          ];
+
+        index =
+          Number(index);
+
+        if (
+          !Number.isInteger(
+            index
+          ) ||
+          index < 0 ||
+          index >=
+            hand.length
+        ) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              "Carte invalidă."
+          });
+        }
+
+        const card =
+          hand[index];
+
+        if (
+          room.continuationMode
+        ) {
+          if (
+            !isCut(
+              card,
+              room.openingRank
+            )
+          ) {
+            return callback({
+              ok:
+                false,
+
+              error:
+                `Trebuie ${room.openingRank}, 7 sau 8.`
+            });
+          }
+
+          room.cardsInCycle =
+            0;
+
+          room.continuationMode =
+            false;
+        }
+
+        hand.splice(
+          index,
+          1
+        );
+
+        if (
+          room.table.length ===
+          0
+        ) {
+          room.opener =
+            seat;
+
+          room.openingRank =
+            card.rank;
+
+          room.controlTeam =
+            room.players[
+              seat
+            ].team;
+
+          room.lastCutter =
+            seat;
+        }
+
+        const cut =
+          isCut(
+            card,
+            room.openingRank
+          );
+
+        if (cut) {
+          room.controlTeam =
+            room.players[
+              seat
+            ].team;
+
+          room.lastCutter =
+            seat;
+
+          room.message =
+            `${room.players[seat].name} a tăiat. Echipa ${room.controlTeam} are momentan mâna.`;
+        } else {
+          room.message =
+            `${room.players[seat].name} a jucat ${card.rank}${card.suit}.`;
+        }
+
+        room.table.push({
+          player:
+            seat,
+
+          card,
+
+          cut
+        });
+
+        room.cardsInCycle++;
+
+        afterCardPlayed(
+          room
+        );
+
+        callback({
+          ok:
+            true
+        });
+
+        sendState(room);
+
+        scheduleBot(room);
+      }
+    );
+
+    /* =========================
+       CHAT
+    ========================= */
+
+    socket.on(
+      "chatMessage",
+      (
+        {
+          code,
+          text
+        },
+        callback
+      ) => {
+
+        const room =
+          rooms.get(
+            String(code)
+          );
+
+        if (!room) {
+          return callback?.({
+            ok:
+              false,
+
+            error:
+              "Camera nu există."
+          });
+        }
+
+        const seat =
+          room.players.findIndex(
+            player =>
+              player &&
+              !player.bot &&
+              player.socketId ===
+                socket.id
+          );
+
+        if (
+          seat === -1
+        ) {
+          return callback?.({
+            ok:
+              false,
+
+            error:
+              "Nu ești în cameră."
+          });
+        }
+
+        text =
+          String(
+            text || ""
+          )
+            .trim()
+            .slice(
+              0,
+              200
+            );
+
+        if (!text) {
+          return callback?.({
+            ok:
+              false,
+
+            error:
+              "Mesaj gol."
+          });
+        }
+
+        io
+          .to(room.code)
+          .emit(
+            "chatMessage",
+            {
+              name:
+                room.players[
+                  seat
+                ].name,
+
+              text
+            }
+          );
+
+        callback?.({
+          ok:
+            true
+        });
+      }
+    );
+
+    /* =========================
+       KICK
+    ========================= */
+
+    socket.on(
+      "kickPlayer",
+      (
+        {
+          code,
+          seat
+        },
+        callback
+      ) => {
+
+        const room =
+          rooms.get(
+            String(code)
+          );
+
+        if (!room) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              "Camera nu există."
+          });
+        }
+
+        if (
+          socket.id !==
+          room.hostId
+        ) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              "Doar host-ul poate da afară."
+          });
+        }
+
+        if (
+          room.started
+        ) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              "Nu poți da afară după start."
+          });
+        }
+
+        seat =
+          Number(seat);
+
+        const player =
+          room.players[
+            seat
+          ];
+
+        if (!player) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              "Loc liber."
+          });
+        }
+
+        if (
+          player.socketId ===
+          room.hostId
+        ) {
+          return callback({
+            ok:
+              false,
+
+            error:
+              "Host-ul nu se poate scoate."
+          });
+        }
+
+        if (
+          !player.bot &&
+          player.socketId
+        ) {
+          io
+            .to(
+              player.socketId
+            )
+            .emit(
+              "kicked"
+            );
+        }
+
+        room.players[
+          seat
+        ] = null;
+
+        room.hands[
+          seat
+        ] = [];
+
+        room.message =
+          `${player.name} a fost scos din cameră.`;
+
+        callback({
+          ok:
+            true
+        });
+
+        sendState(room);
+      }
+    );
+
+    /* =========================
+       DISCONNECT
+    ========================= */
+
+    socket.on(
+      "disconnect",
+      () => {
+
+        for (
+          const room
+          of rooms.values()
+        ) {
+          const seat =
+            room.players.findIndex(
+              player =>
+                player &&
+                !player.bot &&
+                player.socketId ===
+                  socket.id
+            );
+
+          if (
+            seat === -1
+          ) {
+            continue;
+          }
+
+          const player =
+            room.players[
+              seat
+            ];
+
+          if (
+            !room.started
+          ) {
+            room.players[
+              seat
+            ] = null;
+
+            room.message =
+              `${player.name} a ieșit din cameră.`;
+
+            if (
+              socket.id ===
+              room.hostId
+            ) {
+              const newHost =
+                firstHumanPlayer(
+                  room
+                );
+
+              if (
+                newHost
+              ) {
+                room.hostId =
+                  newHost.socketId;
+              } else {
+                rooms.delete(
+                  room.code
+                );
+
+                continue;
+              }
+            }
+
+            sendState(room);
+          } else {
+            player.connected =
+              false;
+
+            room.message =
+              `${player.name} s-a deconectat.`;
+
+            sendState(room);
+          }
+        }
+      }
+    );
+  }
+);
 
 const PORT =
-  process.env.PORT || 3000;
+  process.env.PORT ||
+  3000;
 
 server.listen(
   PORT,
