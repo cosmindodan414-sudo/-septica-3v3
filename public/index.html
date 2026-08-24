@@ -1,331 +1,1177 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="ro">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Șeptică 3v3 Online</title>
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
+
+<title>Șeptică 3v3</title>
 
 <style>
-body{
-  font-family:Arial,sans-serif;
-  background:#075b2b;
-  color:#fff;
-  margin:0;
-  padding:18px;
-  text-align:center
+
+* {
+  box-sizing: border-box;
 }
-.wrap{max-width:950px;margin:auto}
-.panel{
-  background:#0d7138;
-  border-radius:20px;
-  padding:18px;
-  margin:12px 0;
-  box-shadow:0 8px 24px #0003
+
+body {
+  margin: 0;
+  padding: 15px;
+
+  font-family:
+    Arial,
+    sans-serif;
+
+  background:
+    linear-gradient(
+      135deg,
+      #063d20,
+      #08783b
+    );
+
+  color: white;
+
+  text-align: center;
+
+  min-height: 100vh;
 }
-input,button{
-  font-size:16px;
-  padding:12px;
-  border-radius:10px;
-  border:0;
-  margin:5px
+
+.container {
+  max-width: 1000px;
+  margin: auto;
 }
-button{font-weight:700;cursor:pointer}
-.players{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:8px
+
+h1 {
+  margin-bottom: 5px;
 }
-.p{
-  background:#0003;
-  padding:10px;
-  border-radius:10px
+
+.subtitle {
+  opacity: 0.8;
+  margin-bottom: 20px;
 }
-.active{outline:3px solid #ffd84a}
-.cards{
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:center;
-  gap:8px
+
+/* PANOURI */
+
+.panel {
+  background:
+    rgba(0,0,0,0.25);
+
+  border-radius: 18px;
+
+  padding: 18px;
+
+  margin-bottom: 15px;
+
+  box-shadow:
+    0 8px 25px
+    rgba(0,0,0,0.25);
 }
-.card{
-  background:white;
-  color:#111;
-  min-width:58px
+
+/* INPUT */
+
+input {
+  width: 100%;
+
+  max-width: 350px;
+
+  padding: 14px;
+
+  margin: 6px;
+
+  border: none;
+
+  border-radius: 10px;
+
+  font-size: 16px;
 }
-.red{color:#c62828}
-.muted{opacity:.8}
-.hide{display:none}
-.trick{min-height:70px}
+
+/* BUTOANE */
+
+button {
+  padding: 12px 18px;
+
+  margin: 6px;
+
+  border: none;
+
+  border-radius: 10px;
+
+  font-size: 15px;
+
+  font-weight: bold;
+
+  cursor: pointer;
+}
+
+.createButton {
+  background: #ffd54f;
+  color: #222;
+}
+
+.joinButton {
+  background: white;
+  color: #222;
+}
+
+.startButton {
+  background: #4caf50;
+  color: white;
+
+  font-size: 18px;
+
+  padding: 14px 25px;
+}
+
+.kickButton {
+  background: #d32f2f;
+  color: white;
+
+  padding: 8px 12px;
+
+  margin-top: 8px;
+}
+
+/* ASCUNS */
+
+.hidden {
+  display: none;
+}
+
+/* COD CAMERĂ */
+
+.roomCode {
+  font-size: 30px;
+
+  letter-spacing: 5px;
+
+  color: #ffd54f;
+
+  margin: 10px;
+}
+
+/* ECHIPE */
+
+.teams {
+  display: grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap: 10px;
+
+  margin-bottom: 15px;
+}
+
+.team {
+  padding: 15px;
+
+  border-radius: 15px;
+
+  background:
+    rgba(255,255,255,0.12);
+}
+
+.score {
+  font-size: 32px;
+
+  font-weight: bold;
+
+  color: #ffd54f;
+}
+
+/* JUCĂTORI */
+
+.players {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3,1fr);
+
+  gap: 10px;
+}
+
+.player {
+  padding: 12px;
+
+  border-radius: 12px;
+
+  background:
+    rgba(0,0,0,0.30);
+
+  min-height: 100px;
+}
+
+.player.active {
+  outline:
+    3px solid #ffd54f;
+
+  background:
+    rgba(255,213,79,0.15);
+}
+
+.playerName {
+  font-size: 17px;
+
+  font-weight: bold;
+}
+
+.playerTeam {
+  margin-top: 5px;
+
+  opacity: 0.8;
+}
+
+.turnText {
+  margin-top: 6px;
+
+  color: #ffd54f;
+
+  font-weight: bold;
+}
+
+/* MASĂ */
+
+.table {
+  min-height: 130px;
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  flex-wrap: wrap;
+
+  gap: 8px;
+}
+
+/* CĂRȚI */
+
+.card {
+  width: 62px;
+
+  min-height: 88px;
+
+  background: white;
+
+  color: black;
+
+  border-radius: 9px;
+
+  font-size: 19px;
+
+  font-weight: bold;
+
+  box-shadow:
+    0 4px 8px
+    rgba(0,0,0,0.35);
+}
+
+.card.red {
+  color: #d32f2f;
+}
+
+.card:disabled {
+  opacity: 0.75;
+}
+
+/* MÂNA JUCĂTORULUI */
+
+.hand {
+  display: flex;
+
+  justify-content: center;
+
+  flex-wrap: wrap;
+
+  gap: 7px;
+}
+
+.myCard {
+  transition:
+    transform 0.15s;
+}
+
+.myCard:hover {
+  transform:
+    translateY(-5px);
+}
+
+/* MESAJE */
+
+.message {
+  font-size: 17px;
+
+  padding: 10px;
+
+  color: #fff3b0;
+}
+
+.error {
+  color: #ffaaaa;
+
+  margin-top: 10px;
+}
+
+/* TELEFON */
+
+@media
+(max-width: 650px) {
+
+  .players {
+    grid-template-columns:
+      repeat(2,1fr);
+  }
+
+  .teams {
+    grid-template-columns:
+      1fr 1fr;
+  }
+
+  .card {
+    width: 55px;
+
+    min-height: 80px;
+
+    font-size: 17px;
+  }
+
+}
+
 </style>
+
 </head>
 
 <body>
 
-<div class="wrap">
+<div class="container">
 
-<h1>Șeptică 3v3 Online</h1>
+<h1>🃏 Șeptică 3v3</h1>
 
-<div id="lobby" class="panel">
+<div class="subtitle">
+6 jucători • Echipa 1 vs Echipa 2
+</div>
 
-<input id="name" placeholder="Numele tău">
+
+<!-- LOBBY -->
+
+<div
+  id="lobby"
+  class="panel"
+>
+
+<h2>Intră la masă</h2>
+
+<input
+  id="playerName"
+  placeholder="Numele tău"
+  maxlength="20"
+>
 
 <br>
 
-<button onclick="createRoom()">Creează cameră</button>
+<button
+  class="createButton"
+  onclick="createRoom()"
+>
+Creează cameră
+</button>
 
-<input id="code" placeholder="Cod cameră" inputmode="numeric">
+<br><br>
 
-<button onclick="joinRoom()">Intră în cameră</button>
+<input
+  id="roomInput"
+  placeholder="Cod cameră"
+  maxlength="6"
+  inputmode="numeric"
+>
 
-<div id="err"></div>
+<br>
+
+<button
+  class="joinButton"
+  onclick="joinRoom()"
+>
+Intră în cameră
+</button>
+
+<div
+  id="error"
+  class="error"
+></div>
 
 </div>
 
-<div id="game" class="hide">
+
+<!-- JOC -->
+
+<div
+  id="game"
+  class="hidden"
+>
+
+<!-- CAMERA -->
 
 <div class="panel">
 
 <div>
-Cod cameră:
-<b id="roomCode"></b>
+Codul camerei
 </div>
 
-<div class="muted">
-Trimite codul celorlalți 5 jucători.
+<div
+  id="roomCode"
+  class="roomCode"
+>
+------
 </div>
 
-<button id="startBtn" class="hide" onclick="startGame()">
-Pornește jocul
+<div>
+Trimite acest cod celorlalți 5 jucători.
+</div>
+
+<br>
+
+<button
+  id="startButton"
+  class="startButton hidden"
+  onclick="startGame()"
+>
+▶ Pornește jocul
 </button>
 
 </div>
 
-<div class="panel">
+
+<!-- SCOR -->
+
+<div class="teams">
+
+<div class="team">
+
+<h2>Echipa 1</h2>
 
 <div>
-<b>Echipa A</b> J1/J3/J5 —
-<span id="scoreA">0</span> puncte
-
-&nbsp; | &nbsp;
-
-<b>Echipa B</b> J2/J4/J6 —
-<span id="scoreB">0</span> puncte
+Jucător 1 • Jucător 3 • Jucător 5
 </div>
 
-<p id="message"></p>
+<div
+  id="score1"
+  class="score"
+>
+0
+</div>
 
-<div id="players" class="players"></div>
+<div>
+puncte
+</div>
 
 </div>
+
+
+<div class="team">
+
+<h2>Echipa 2</h2>
+
+<div>
+Jucător 2 • Jucător 4 • Jucător 6
+</div>
+
+<div
+  id="score2"
+  class="score"
+>
+0
+</div>
+
+<div>
+puncte
+</div>
+
+</div>
+
+</div>
+
+
+<!-- MESAJ -->
+
+<div
+  id="message"
+  class="panel message"
+>
+Așteptăm jucătorii...
+</div>
+
+
+<!-- JUCĂTORI -->
 
 <div class="panel">
 
-<h3>Masa</h3>
+<h2>👥 Jucători</h2>
 
-<div id="trick" class="cards trick"></div>
+<div
+  id="players"
+  class="players"
+></div>
 
 </div>
+
+
+<!-- MASA -->
 
 <div class="panel">
 
-<h3>Cărțile mele</h3>
+<h2>🎴 Masa</h2>
 
-<div id="hand" class="cards"></div>
+<div
+  id="table"
+  class="table"
+></div>
+
+</div>
+
+
+<!-- CĂRȚILE MELE -->
+
+<div class="panel">
+
+<h2>🃏 Cărțile mele</h2>
+
+<div
+  id="hand"
+  class="hand"
+></div>
 
 </div>
 
 </div>
 
 </div>
+
 
 <script src="/socket.io/socket.io.js"></script>
 
 <script>
 
-const socket = io()
+const socket = io();
 
-let mySeat = null
-let roomCode = null
-let state = null
-let hand = []
+let roomCode = null;
 
-function e(id){
-  return document.getElementById(id)
+let mySeat = null;
+
+let state = null;
+
+let myHand = [];
+
+
+/* =========================
+   ELEMENT
+========================= */
+
+function element(id) {
+  return document.getElementById(id);
 }
 
-function createRoom(){
+
+/* =========================
+   CREATE ROOM
+========================= */
+
+function createRoom() {
+
+  const name =
+    element('playerName')
+      .value
+      .trim();
 
   socket.emit(
     'createRoom',
-    {name:e('name').value.trim()},
-    r=>{
-      if(!r.ok) return err(r.error)
-      enter(r.code,r.seat)
+    {
+      name
+    },
+
+    response => {
+
+      if (!response.ok) {
+
+        showError(
+          response.error
+        );
+
+        return;
+      }
+
+      enterRoom(
+        response.code,
+        response.seat
+      );
+
     }
-  )
+  );
 
 }
 
-function joinRoom(){
+
+/* =========================
+   JOIN ROOM
+========================= */
+
+function joinRoom() {
+
+  const name =
+    element('playerName')
+      .value
+      .trim();
+
+  const code =
+    element('roomInput')
+      .value
+      .trim();
+
+  if (!code) {
+
+    showError(
+      'Introdu codul camerei.'
+    );
+
+    return;
+  }
 
   socket.emit(
     'joinRoom',
     {
-      code:e('code').value.trim(),
-      name:e('name').value.trim()
+      code,
+      name
     },
-    r=>{
-      if(!r.ok) return err(r.error)
-      enter(r.code,r.seat)
+
+    response => {
+
+      if (!response.ok) {
+
+        showError(
+          response.error
+        );
+
+        return;
+      }
+
+      enterRoom(
+        response.code,
+        response.seat
+      );
+
     }
-  )
+  );
 
 }
 
-function enter(code,seat){
 
-  roomCode = code
-  mySeat = seat
+/* =========================
+   ENTER ROOM
+========================= */
 
-  e('lobby').classList.add('hide')
-  e('game').classList.remove('hide')
+function enterRoom(
+  code,
+  seat
+) {
 
-  e('roomCode').textContent = code
+  roomCode = code;
+
+  mySeat = seat;
+
+  element('lobby')
+    .classList
+    .add('hidden');
+
+  element('game')
+    .classList
+    .remove('hidden');
+
+  element('roomCode')
+    .textContent =
+    code;
 
 }
 
-function err(m){
-  e('err').textContent = m
-}
 
-function startGame(){
+/* =========================
+   START GAME
+========================= */
+
+function startGame() {
 
   socket.emit(
     'startGame',
-    {code:roomCode},
-    r=>{
-      if(!r.ok) alert(r.error)
+    {
+      code: roomCode
+    },
+
+    response => {
+
+      if (!response.ok) {
+
+        alert(
+          response.error
+        );
+
+      }
+
     }
-  )
+  );
 
 }
 
-function play(i){
+
+/* =========================
+   PLAY CARD
+========================= */
+
+function playCard(index) {
 
   socket.emit(
     'playCard',
     {
-      code:roomCode,
-      index:i
+      code: roomCode,
+      index
     },
-    r=>{
-      if(!r.ok) alert(r.error)
+
+    response => {
+
+      if (!response.ok) {
+
+        alert(
+          response.error
+        );
+
+      }
+
     }
-  )
+  );
 
 }
 
-function red(c){
-  return c.suit==='♥' || c.suit==='♦'
+
+/* =========================
+   KICK PLAYER
+========================= */
+
+function kickPlayer(seat) {
+
+  if (
+    !confirm(
+      `Vrei să dai afară Jucătorul ${seat + 1}?`
+    )
+  ) {
+
+    return;
+
+  }
+
+  socket.emit(
+    'kickPlayer',
+    {
+      code: roomCode,
+      seat
+    },
+
+    response => {
+
+      if (!response.ok) {
+
+        alert(
+          response.error
+        );
+
+      }
+
+    }
+  );
+
 }
 
-socket.on('state',s=>{
-  state=s
-  render()
-})
 
-socket.on('hand',h=>{
-  hand=h
-  render()
-})
+/* =========================
+   AI FOST DAT AFARĂ
+========================= */
 
-function render(){
+socket.on(
+  'kicked',
+  () => {
 
-  if(!state) return
+    alert(
+      'Host-ul te-a dat afară din cameră.'
+    );
 
-  e('scoreA').textContent=state.scoreA
-  e('scoreB').textContent=state.scoreB
+    window.location.reload();
 
-  e('message').textContent=state.message || ''
+  }
+);
 
-  e('startBtn').classList.toggle(
-    'hide',
-    socket.id!==state.hostId ||
-    state.started ||
-    state.players.length!==6
-  )
 
-  const ps=e('players')
+/* =========================
+   STATE
+========================= */
 
-  ps.innerHTML=''
+socket.on(
+  'state',
+  newState => {
 
-  state.players.forEach((p,i)=>{
+    state = newState;
 
-    const d=document.createElement('div')
+    render();
 
-    d.className=
-      'p'+
-      (state.turn===i && state.started ? ' active':'')
+  }
+);
 
-    d.innerHTML=
-      `J${i+1} — ${p.name}<br>
-      Echipa ${p.team}<br>
-      ${state.handCounts[i]??0} cărți
-      ${!p.connected?' — offline':''}`
 
-    ps.appendChild(d)
+/* =========================
+   CĂRȚILE MELE
+========================= */
 
-  })
+socket.on(
+  'hand',
+  hand => {
 
-  const tr=e('trick')
+    myHand = hand;
 
-  tr.innerHTML=''
+    render();
 
-  state.trick.forEach(x=>{
+  }
+);
 
-    const b=document.createElement('button')
 
-    b.disabled=true
+/* =========================
+   RED CARD
+========================= */
 
-    b.className=
-      'card '+
-      (red(x.card)?'red':'')
+function isRed(card) {
 
-    b.textContent=
-      `J${x.player+1}: ${x.card.rank}${x.card.suit}`
+  return (
+    card.suit === '♥' ||
+    card.suit === '♦'
+  );
 
-    tr.appendChild(b)
+}
 
-  })
 
-  const h=e('hand')
+/* =========================
+   RENDER
+========================= */
 
-  h.innerHTML=''
+function render() {
 
-  hand.forEach((c,i)=>{
+  if (!state) {
+    return;
+  }
 
-    const b=document.createElement('button')
 
-    b.className=
-      'card '+
-      (red(c)?'red':'')
+  /* SCOR */
 
-    b.textContent=
-      c.rank+c.suit
+  element('score1')
+    .textContent =
+    state.scoreA ?? 0;
 
-    b.disabled=
-      !state.started ||
-      state.turn!==mySeat
+  element('score2')
+    .textContent =
+    state.scoreB ?? 0;
 
-    b.onclick=()=>play(i)
 
-    h.appendChild(b)
+  /* MESAJ */
 
-  })
+  element('message')
+    .textContent =
+    state.message ||
+    'Joc în desfășurare';
+
+
+  /* START BUTTON */
+
+  const amIHost =
+    socket.id ===
+    state.hostId;
+
+  const sixPlayers =
+    state.players.length === 6;
+
+  const showStart =
+    amIHost &&
+    sixPlayers &&
+    !state.started;
+
+  element('startButton')
+    .classList
+    .toggle(
+      'hidden',
+      !showStart
+    );
+
+
+  /* JUCĂTORI */
+
+  const playersContainer =
+    element('players');
+
+  playersContainer.innerHTML = '';
+
+
+  state.players.forEach(
+    (player,index) => {
+
+      const box =
+        document.createElement(
+          'div'
+        );
+
+      box.className =
+        'player';
+
+
+      if (
+        state.started &&
+        state.turn === index
+      ) {
+
+        box.classList
+          .add('active');
+
+      }
+
+
+      const name =
+        player.name ||
+        `Jucător ${index + 1}`;
+
+
+      let html = `
+
+        <div class="playerName">
+
+          Jucător ${index + 1}
+
+        </div>
+
+        <div>
+
+          ${name}
+
+        </div>
+
+        <div class="playerTeam">
+
+          Echipa ${player.team}
+
+        </div>
+
+        <div>
+
+          ${
+            state.handCounts[index] ?? 0
+          } cărți
+
+        </div>
+
+      `;
+
+
+      if (
+        state.started &&
+        state.turn === index
+      ) {
+
+        html += `
+
+          <div class="turnText">
+
+            ▶ Rândul lui
+
+          </div>
+
+        `;
+
+      }
+
+
+      /*
+        BUTON KICK
+
+        Îl vede doar host-ul.
+
+        Host-ul nu se poate
+        da singur afară.
+
+        Nu se poate da kick
+        după pornirea jocului.
+      */
+
+      if (
+        amIHost &&
+        index !== 0 &&
+        !state.started
+      ) {
+
+        html += `
+
+          <button
+            class="kickButton"
+            onclick="kickPlayer(${index})"
+          >
+
+            ✕ Dă afară
+
+          </button>
+
+        `;
+
+      }
+
+
+      box.innerHTML = html;
+
+      playersContainer
+        .appendChild(box);
+
+    }
+  );
+
+
+  /* MASĂ */
+
+  const tableContainer =
+    element('table');
+
+  tableContainer.innerHTML = '';
+
+
+  const cardsOnTable =
+    state.table ||
+    state.trick ||
+    [];
+
+
+  cardsOnTable.forEach(
+    play => {
+
+      const cardButton =
+        document.createElement(
+          'button'
+        );
+
+      cardButton.className =
+        'card';
+
+
+      if (
+        isRed(play.card)
+      ) {
+
+        cardButton
+          .classList
+          .add('red');
+
+      }
+
+
+      cardButton.disabled =
+        true;
+
+
+      cardButton.innerHTML =
+
+        `J${play.player + 1}<br>` +
+
+        `${play.card.rank}${play.card.suit}`;
+
+
+      tableContainer
+        .appendChild(
+          cardButton
+        );
+
+    }
+  );
+
+
+  /* MÂNA MEA */
+
+  const handContainer =
+    element('hand');
+
+  handContainer.innerHTML = '';
+
+
+  myHand.forEach(
+    (card,index) => {
+
+      const cardButton =
+        document.createElement(
+          'button'
+        );
+
+
+      cardButton.className =
+        'card myCard';
+
+
+      if (
+        isRed(card)
+      ) {
+
+        cardButton
+          .classList
+          .add('red');
+
+      }
+
+
+      cardButton.textContent =
+        card.rank +
+        card.suit;
+
+
+      /*
+        Poți apăsa cartea
+        numai când este
+        rândul tău.
+      */
+
+      cardButton.disabled =
+        !state.started ||
+        state.turn !== mySeat;
+
+
+      cardButton.onclick =
+        () =>
+          playCard(index);
+
+
+      handContainer
+        .appendChild(
+          cardButton
+        );
+
+    }
+  );
+
+}
+
+
+/* =========================
+   ERROR
+========================= */
+
+function showError(message) {
+
+  element('error')
+    .textContent =
+    message;
 
 }
 
 </script>
 
 </body>
+
 </html>
