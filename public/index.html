@@ -1,52 +1,1600 @@
-socket.on('disconnect', () => {
 
-  for (const room of rooms.values()) {
+<!DOCTYPE html>
+<html lang="ro">
 
-    const seat = room.players.findIndex(
-      p => p.socketId === socket.id
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"
+>
+
+<title>Șeptică 3v3</title>
+
+<style>
+
+*{
+  box-sizing:border-box;
+}
+
+html,
+body{
+  margin:0;
+  min-height:100%;
+  font-family:Arial,Helvetica,sans-serif;
+  color:white;
+  background:#090806;
+}
+
+body{
+  background:
+    radial-gradient(
+      circle at 50% 35%,
+      #50301a 0%,
+      #21150d 42%,
+      #070806 100%
+    );
+}
+
+.hidden{
+  display:none !important;
+}
+
+button,
+input{
+  font-family:inherit;
+}
+
+/* =========================
+   LOBBY
+========================= */
+
+#lobby{
+  width:min(92%,430px);
+  margin:65px auto;
+  padding:26px;
+  text-align:center;
+  background:#07110ff2;
+  border:1px solid #ffffff25;
+  border-radius:22px;
+  box-shadow:0 18px 50px #000b;
+}
+
+#lobby h1{
+  margin:0 0 5px;
+  font-size:36px;
+}
+
+#lobby p{
+  opacity:.8;
+}
+
+#lobby input{
+  width:100%;
+  padding:14px;
+  margin:7px 0;
+  border:1px solid #ffffff25;
+  border-radius:11px;
+  background:#111c18;
+  color:white;
+  font-size:17px;
+}
+
+.lobbyBtn{
+  width:100%;
+  padding:14px;
+  margin:6px 0;
+  border:0;
+  border-radius:11px;
+  color:white;
+  background:#2f9737;
+  font-size:17px;
+  font-weight:bold;
+}
+
+.joinBtn{
+  background:#255dac;
+}
+
+#error{
+  color:#ff8e8e;
+}
+
+/* =========================
+   GAME
+========================= */
+
+#game{
+  min-height:100vh;
+  padding:12px;
+}
+
+/* =========================
+   TOP
+========================= */
+
+.topbar{
+  max-width:1500px;
+  margin:auto;
+  display:grid;
+  grid-template-columns:220px 1fr 145px;
+  gap:12px;
+  align-items:center;
+}
+
+.glass{
+  background:#071019ee;
+  border:1px solid #ffffff20;
+  border-radius:14px;
+  box-shadow:0 7px 22px #0008;
+}
+
+.roomBox{
+  min-height:82px;
+  padding:12px 16px;
+}
+
+.roomBox small{
+  color:#bbb;
+}
+
+#roomCode{
+  display:block;
+  margin-top:4px;
+  font-size:29px;
+  font-weight:bold;
+  letter-spacing:3px;
+  color:#ffd23f;
+}
+
+.scoreBox{
+  min-height:82px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:28px;
+}
+
+.teamBox{
+  font-size:19px;
+  font-weight:bold;
+}
+
+.teamOne{
+  color:#8ef153;
+}
+
+.teamTwo{
+  color:#579dff;
+}
+
+.scoreNumber{
+  font-size:44px;
+  margin-left:10px;
+}
+
+.hostBox{
+  min-height:82px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#ffd33d;
+  font-weight:bold;
+}
+
+/* =========================
+   LAYOUT
+========================= */
+
+.layout{
+  max-width:1500px;
+  margin:10px auto 0;
+  display:grid;
+  grid-template-columns:1fr 190px;
+  gap:12px;
+}
+
+.tableArea{
+  position:relative;
+  height:690px;
+}
+
+/* =========================
+   TABLE
+========================= */
+
+.table{
+  position:absolute;
+  left:50%;
+  top:60px;
+  transform:translateX(-50%);
+  width:min(1100px,82vw);
+  height:560px;
+  border-radius:50%;
+  border:18px solid #6b391c;
+
+  background:
+    radial-gradient(
+      ellipse at center,
+      #2c7e3e 0%,
+      #1a612e 62%,
+      #0c4020 100%
     );
 
-    if (seat === -1) {
-      continue;
-    }
+  box-shadow:
+    inset 0 0 55px #0008,
+    0 25px 55px #000b;
+}
 
-    const player = room.players[seat];
+.table:after{
+  content:"";
+  position:absolute;
+  inset:-10px;
+  border:5px solid #9a5c32;
+  border-radius:50%;
+  pointer-events:none;
+}
 
-    // Dacă jocul NU a început,
-    // scoatem jucătorul complet din cameră.
-    if (!room.started) {
+/* =========================
+   PLAYERS
+========================= */
 
-      room.players.splice(seat, 1);
+.player{
+  position:absolute;
+  width:170px;
+  text-align:center;
+  z-index:10;
+}
 
-      room.message =
-        `${player.name} a ieșit din cameră.`;
+.avatar{
+  width:135px;
+  height:135px;
+  object-fit:contain;
+  filter:drop-shadow(0 9px 10px #000a);
+}
 
-      // Dacă a ieșit host-ul
-      if (socket.id === room.hostId) {
+.player.active .avatar{
+  transform:scale(1.07);
+  filter:
+    drop-shadow(0 0 7px #b8ff36)
+    drop-shadow(0 0 20px #8dff00);
+}
 
-        if (room.players.length > 0) {
-          room.hostId =
-            room.players[0].socketId;
+.playerName{
+  display:inline-block;
+  margin-top:-7px;
+  padding:5px 10px;
+  border-radius:8px;
+  background:#101010dc;
+  font-size:17px;
+  font-weight:bold;
+}
 
-          room.message +=
-            ` ${room.players[0].name} este noul host.`;
-        } else {
-          rooms.delete(room.code);
-          continue;
-        }
+.playerTeam{
+  display:inline-block;
+  margin-top:4px;
+  padding:4px 8px;
+  border-radius:7px;
+  font-size:13px;
+}
+
+.t1{
+  background:#276f1c;
+}
+
+.t2{
+  background:#17458b;
+}
+
+.cardCount{
+  margin-top:3px;
+  font-size:11px;
+  opacity:.75;
+}
+
+.kickButton{
+  margin-top:5px;
+  padding:5px 8px;
+  border:0;
+  border-radius:7px;
+  background:#b62828;
+  color:white;
+  font-weight:bold;
+}
+
+.emptyPlayer{
+  opacity:.4;
+}
+
+.emptyAvatar{
+  width:90px;
+  height:90px;
+  margin:15px auto;
+  border:2px dashed #ffffff77;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:35px;
+}
+
+/* poziții */
+
+.p0{
+  left:6%;
+  top:15%;
+}
+
+.p1{
+  left:43%;
+  top:-11%;
+}
+
+.p2{
+  right:6%;
+  top:15%;
+}
+
+.p3{
+  right:4%;
+  bottom:3%;
+}
+
+.p4{
+  left:43%;
+  bottom:-12%;
+}
+
+.p5{
+  left:4%;
+  bottom:3%;
+}
+
+/* =========================
+   CARDS CENTER
+========================= */
+
+.centerCards{
+  position:absolute;
+  left:50%;
+  top:49%;
+  transform:translate(-50%,-50%);
+  min-width:300px;
+  min-height:170px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:5;
+}
+
+/* =========================
+   CARD
+========================= */
+
+.card{
+  position:relative;
+  width:90px;
+  height:132px;
+  flex:0 0 90px;
+  background:#fff9ed;
+  border:1px solid #d7cab1;
+  border-radius:10px;
+  color:#111;
+  box-shadow:0 6px 13px #0008;
+  overflow:hidden;
+  user-select:none;
+}
+
+.card.red{
+  color:#ce241c;
+}
+
+.cardTop{
+  position:absolute;
+  top:6px;
+  left:8px;
+  font-family:Georgia,serif;
+  font-size:25px;
+  line-height:20px;
+  font-weight:bold;
+}
+
+.cardCenter{
+  position:absolute;
+  inset:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-family:Georgia,serif;
+  font-size:55px;
+}
+
+.cardBottom{
+  position:absolute;
+  right:8px;
+  bottom:6px;
+  transform:rotate(180deg);
+  font-family:Georgia,serif;
+  font-size:24px;
+  line-height:19px;
+  font-weight:bold;
+}
+
+.playedCard{
+  margin-left:-20px;
+  transform:rotate(var(--rot));
+}
+
+/* =========================
+   HAND
+========================= */
+
+.handPanel{
+  width:min(1100px,94vw);
+  margin:-7px auto 0;
+  padding:10px;
+  position:relative;
+  z-index:20;
+  background:#071019ee;
+  border:1px solid #ffffff20;
+  border-radius:15px;
+  box-shadow:0 7px 25px #0009;
+}
+
+.turnMessage{
+  text-align:center;
+  color:#ffd43c;
+  font-size:18px;
+  font-weight:bold;
+  margin-bottom:8px;
+}
+
+.hand{
+  display:flex;
+  justify-content:center;
+  gap:6px;
+  overflow-x:auto;
+}
+
+.canPlay{
+  cursor:pointer;
+}
+
+.canPlay:active{
+  transform:translateY(-10px);
+}
+
+.disabled{
+  opacity:.6;
+  pointer-events:none;
+}
+
+/* =========================
+   DECISION
+========================= */
+
+.decisionBox{
+  margin:10px auto;
+  text-align:center;
+}
+
+.continueButton{
+  padding:13px 18px;
+  margin:5px;
+  border:0;
+  border-radius:11px;
+  background:#34a347;
+  color:white;
+  font-size:16px;
+  font-weight:bold;
+}
+
+.stopButton{
+  padding:13px 18px;
+  margin:5px;
+  border:0;
+  border-radius:11px;
+  background:#bd3838;
+  color:white;
+  font-size:16px;
+  font-weight:bold;
+}
+
+/* =========================
+   INFO
+========================= */
+
+.infoPanel{
+  padding:15px;
+  height:max-content;
+}
+
+.infoTitle{
+  margin-top:13px;
+  color:#bbb;
+}
+
+.infoValue{
+  margin-top:5px;
+  font-size:18px;
+}
+
+.green{
+  color:#8fff60;
+}
+
+/* =========================
+   START
+========================= */
+
+#startButton{
+  position:fixed;
+  right:20px;
+  bottom:20px;
+  z-index:100;
+  padding:14px 22px;
+  border:0;
+  border-radius:12px;
+  background:#3c9c33;
+  color:white;
+  font-size:18px;
+  font-weight:bold;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:850px){
+
+  #game{
+    padding:5px;
+  }
+
+  .topbar{
+    grid-template-columns:105px 1fr 65px;
+    gap:5px;
+  }
+
+  .roomBox,
+  .scoreBox,
+  .hostBox{
+    min-height:61px;
+  }
+
+  .roomBox{
+    padding:7px;
+  }
+
+  #roomCode{
+    font-size:17px;
+    letter-spacing:1px;
+  }
+
+  .teamBox{
+    font-size:10px;
+  }
+
+  .scoreNumber{
+    font-size:27px;
+    margin-left:3px;
+  }
+
+  .hostBox{
+    font-size:10px;
+  }
+
+  .layout{
+    display:block;
+  }
+
+  .infoPanel{
+    display:none;
+  }
+
+  .tableArea{
+    height:510px;
+  }
+
+  .table{
+    top:55px;
+    width:97vw;
+    height:415px;
+    border-width:10px;
+  }
+
+  .player{
+    width:95px;
+  }
+
+  .avatar{
+    width:78px;
+    height:78px;
+  }
+
+  .playerName{
+    font-size:10px;
+    padding:3px 5px;
+  }
+
+  .playerTeam{
+    font-size:9px;
+    padding:2px 5px;
+  }
+
+  .cardCount{
+    display:none;
+  }
+
+  .p0{
+    left:-2%;
+    top:18%;
+  }
+
+  .p1{
+    left:38%;
+    top:-8%;
+  }
+
+  .p2{
+    right:-2%;
+    top:18%;
+  }
+
+  .p3{
+    right:0;
+    bottom:4%;
+  }
+
+  .p4{
+    left:38%;
+    bottom:-8%;
+  }
+
+  .p5{
+    left:0;
+    bottom:4%;
+  }
+
+  .centerCards{
+    transform:
+      translate(-50%,-50%)
+      scale(.68);
+  }
+
+  .hand{
+    justify-content:flex-start;
+  }
+
+  .card{
+    width:64px;
+    height:94px;
+    flex-basis:64px;
+  }
+
+  .cardTop{
+    font-size:18px;
+    line-height:15px;
+  }
+
+  .cardCenter{
+    font-size:38px;
+  }
+
+  .cardBottom{
+    font-size:17px;
+    line-height:14px;
+  }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="lobby">
+
+<h1>🃏 Șeptică 3v3</h1>
+
+<p>
+6 jucători • Echipa 1 vs Echipa 2
+</p>
+
+<input
+  id="name"
+  maxlength="20"
+  placeholder="Numele tău"
+>
+
+<button
+  class="lobbyBtn"
+  onclick="createRoom()"
+>
+Creează cameră
+</button>
+
+<input
+  id="code"
+  maxlength="6"
+  inputmode="numeric"
+  placeholder="Cod cameră"
+>
+
+<button
+  class="lobbyBtn joinBtn"
+  onclick="joinRoom()"
+>
+Intră în cameră
+</button>
+
+<p id="error"></p>
+
+</div>
+
+
+<div
+  id="game"
+  class="hidden"
+>
+
+<div class="topbar">
+
+<div class="roomBox glass">
+
+<small>
+Cod cameră
+</small>
+
+<span id="roomCode">
+------
+</span>
+
+</div>
+
+
+<div class="scoreBox glass">
+
+<div class="teamBox teamOne">
+
+ECHIPA 1
+
+<span
+  id="score1"
+  class="scoreNumber"
+>
+0
+</span>
+
+</div>
+
+<div>
+-
+</div>
+
+<div class="teamBox teamTwo">
+
+<span
+  id="score2"
+  class="scoreNumber"
+>
+0
+</span>
+
+ECHIPA 2
+
+</div>
+
+</div>
+
+
+<div
+  id="hostBox"
+  class="hostBox glass"
+>
+👑 Host
+</div>
+
+</div>
+
+
+<div class="layout">
+
+<div>
+
+<div class="tableArea">
+
+<div class="table">
+
+<div id="players"></div>
+
+<div
+  id="centerCards"
+  class="centerCards"
+></div>
+
+</div>
+
+</div>
+
+
+<div class="handPanel">
+
+<div
+  id="turnMessage"
+  class="turnMessage"
+>
+Așteptăm...
+</div>
+
+
+<div
+  id="decisionBox"
+  class="decisionBox hidden"
+>
+
+<button
+  class="continueButton"
+  onclick="continueRound()"
+>
+▶ Continuă runda
+</button>
+
+<button
+  class="stopButton"
+  onclick="stopRound()"
+>
+■ Oprește runda
+</button>
+
+</div>
+
+
+<div
+  id="hand"
+  class="hand"
+></div>
+
+</div>
+
+</div>
+
+
+<div class="infoPanel glass">
+
+<div class="infoTitle">
+Prima carte:
+</div>
+
+<div
+  id="firstCard"
+  class="infoValue"
+>
+-
+</div>
+
+<div class="infoTitle">
+Tăieri:
+</div>
+
+<div
+  id="cutsAllowed"
+  class="infoValue"
+>
+7 și 8
+</div>
+
+<div class="infoTitle">
+Cărți jucate:
+</div>
+
+<div
+  id="playedCount"
+  class="infoValue"
+>
+0
+</div>
+
+<div class="infoTitle">
+Mesaj:
+</div>
+
+<div
+  id="message"
+  class="infoValue green"
+>
+Așteptăm...
+</div>
+
+</div>
+
+</div>
+
+
+<button
+  id="startButton"
+  class="hidden"
+  onclick="startGame()"
+>
+▶ Pornește jocul
+</button>
+
+</div>
+
+
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+
+const socket = io();
+
+let roomCode = null;
+let mySeat = null;
+let state = null;
+let myHand = [];
+
+const avatars = [
+  "/player1.png",
+  "/player2.png",
+  "/player3.png",
+  "/player4.png",
+  "/player5.png",
+  "/player6.png"
+];
+
+function e(id){
+  return document.getElementById(id);
+}
+
+/* ROOM */
+
+function createRoom(){
+
+  socket.emit(
+    "createRoom",
+    {
+      name:e("name").value.trim()
+    },
+    r=>{
+
+      if(!r.ok){
+        showError(r.error);
+        return;
       }
 
-      sendState(room);
+      enterRoom(
+        r.code,
+        r.seat
+      );
+    }
+  );
+}
+
+function joinRoom(){
+
+  socket.emit(
+    "joinRoom",
+    {
+      code:e("code").value.trim(),
+      name:e("name").value.trim()
+    },
+    r=>{
+
+      if(!r.ok){
+        showError(r.error);
+        return;
+      }
+
+      enterRoom(
+        r.code,
+        r.seat
+      );
+    }
+  );
+}
+
+function enterRoom(code,seat){
+
+  roomCode = code;
+  mySeat = seat;
+
+  e("lobby")
+    .classList
+    .add("hidden");
+
+  e("game")
+    .classList
+    .remove("hidden");
+
+  e("roomCode")
+    .textContent =
+    code;
+}
+
+socket.on(
+  "seat",
+  seat=>{
+    mySeat = seat;
+    render();
+  }
+);
+
+/* GAME */
+
+function startGame(){
+
+  socket.emit(
+    "startGame",
+    {
+      code:roomCode
+    },
+    r=>{
+
+      if(!r.ok){
+        alert(r.error);
+      }
+    }
+  );
+}
+
+function continueRound(){
+
+  socket.emit(
+    "continueRound",
+    {
+      code:roomCode
+    },
+    r=>{
+
+      if(!r.ok){
+        alert(r.error);
+      }
+    }
+  );
+}
+
+function stopRound(){
+
+  socket.emit(
+    "stopRound",
+    {
+      code:roomCode
+    },
+    r=>{
+
+      if(!r.ok){
+        alert(r.error);
+      }
+    }
+  );
+}
+
+function playCard(index){
+
+  socket.emit(
+    "playCard",
+    {
+      code:roomCode,
+      index
+    },
+    r=>{
+
+      if(!r.ok){
+        alert(r.error);
+      }
+    }
+  );
+}
+
+/* KICK */
+
+function kickPlayer(seat){
+
+  const player =
+    state.players[seat];
+
+  if(!player){
+    return;
+  }
+
+  if(
+    !confirm(
+      `Dai afară pe ${player.name}?`
+    )
+  ){
+    return;
+  }
+
+  socket.emit(
+    "kickPlayer",
+    {
+      code:roomCode,
+      seat
+    },
+    r=>{
+
+      if(!r.ok){
+        alert(r.error);
+      }
+    }
+  );
+}
+
+socket.on(
+  "kicked",
+  ()=>{
+
+    alert(
+      "Host-ul te-a dat afară."
+    );
+
+    location.reload();
+  }
+);
+
+/* STATE */
+
+socket.on(
+  "state",
+  s=>{
+
+    state = s;
+
+    render();
+  }
+);
+
+socket.on(
+  "hand",
+  h=>{
+
+    myHand = h;
+
+    render();
+  }
+);
+
+/* CARD */
+
+function cardIsRed(card){
+
+  return(
+    card.suit === "♥" ||
+    card.suit === "♦"
+  );
+}
+
+function cardHTML(card){
+
+  return `
+
+    <div class="cardTop">
+      ${card.rank}<br>${card.suit}
+    </div>
+
+    <div class="cardCenter">
+      ${card.suit}
+    </div>
+
+    <div class="cardBottom">
+      ${card.rank}<br>${card.suit}
+    </div>
+
+  `;
+}
+
+/* RENDER */
+
+function render(){
+
+  if(!state){
+    return;
+  }
+
+  e("score1").textContent =
+    state.scoreA ?? 0;
+
+  e("score2").textContent =
+    state.scoreB ?? 0;
+
+  e("message").textContent =
+    state.message || "";
+
+  const amIHost =
+    socket.id === state.hostId;
+
+  e("hostBox").textContent =
+    amIHost
+      ? "👑 Tu ești Host"
+      : "👑 Host";
+
+  const connectedPlayers =
+    state.players.filter(Boolean).length;
+
+  e("startButton")
+    .classList
+    .toggle(
+      "hidden",
+      !(
+        amIHost &&
+        connectedPlayers === 6 &&
+        !state.started
+      )
+    );
+
+  /* DECISION BUTTONS */
+
+  const showDecision =
+    state.started &&
+    state.awaitingDecision &&
+    state.opener === mySeat;
+
+  e("decisionBox")
+    .classList
+    .toggle(
+      "hidden",
+      !showDecision
+    );
+
+  /* TURN */
+
+  if(state.awaitingDecision){
+
+    const opener =
+      state.players[
+        state.opener
+      ];
+
+    if(state.opener === mySeat){
+
+      e("turnMessage")
+        .textContent =
+        "Alegi: continui runda sau o oprești?";
+
+    }else{
+
+      e("turnMessage")
+        .textContent =
+        `${opener?.name || "Jucătorul"} decide dacă continuă runda.`;
+
+    }
+
+  }else if(state.started){
+
+    const current =
+      state.players[
+        state.turn
+      ];
+
+    if(state.turn === mySeat){
+
+      e("turnMessage")
+        .textContent =
+        state.continuationMode
+          ? `🟢 Alege ${state.openingRank}, 7 sau 8`
+          : "🟢 Rândul tău";
+
+    }else{
+
+      e("turnMessage")
+        .textContent =
+        `Rândul lui ${current?.name || "jucător"}`;
+
+    }
+
+  }else{
+
+    e("turnMessage")
+      .textContent =
+      `${connectedPlayers}/6 jucători la masă`;
+
+  }
+
+  /* PLAYERS */
+
+  const players =
+    e("players");
+
+  players.innerHTML = "";
+
+  for(
+    let index=0;
+    index<6;
+    index++
+  ){
+
+    const player =
+      state.players[index];
+
+    const box =
+      document.createElement(
+        "div"
+      );
+
+    box.className =
+      `player p${index}`;
+
+    if(!player){
+
+      box.classList.add(
+        "emptyPlayer"
+      );
+
+      box.innerHTML = `
+
+        <div class="emptyAvatar">
+          +
+        </div>
+
+        <div class="playerName">
+          Loc liber
+        </div>
+
+        <br>
+
+        <div
+          class="playerTeam ${
+            index % 2 === 0
+              ? "t1"
+              : "t2"
+          }"
+        >
+          Echipa ${
+            index % 2 === 0
+              ? "1"
+              : "2"
+          }
+        </div>
+
+      `;
+
+      players.appendChild(box);
+
       continue;
     }
 
-    // Dacă jocul a început,
-    // îl marcăm doar offline.
-    player.connected = false;
+    if(
+      state.started &&
+      state.turn === index
+    ){
 
-    room.message =
-      `${player.name} s-a deconectat.`;
+      box.classList.add(
+        "active"
+      );
+    }
 
-    sendState(room);
+    let kick = "";
+
+    if(
+      amIHost &&
+      !state.started &&
+      index !== mySeat
+    ){
+
+      kick = `
+
+        <button
+          class="kickButton"
+          onclick="kickPlayer(${index})"
+        >
+          ✕ Dă afară
+        </button>
+
+      `;
+    }
+
+    box.innerHTML = `
+
+      <img
+        class="avatar"
+        src="${avatars[index]}"
+      >
+
+      <div class="playerName">
+
+        ${player.name}
+
+        ${
+          index === mySeat
+            ? " (Tu)"
+            : ""
+        }
+
+      </div>
+
+      <br>
+
+      <div
+        class="playerTeam ${
+          player.team === 1
+            ? "t1"
+            : "t2"
+        }"
+      >
+
+        Echipa ${player.team}
+
+      </div>
+
+      <div class="cardCount">
+
+        ${
+          state.handCounts[index]
+          ?? 0
+        } cărți
+
+      </div>
+
+      ${kick}
+
+    `;
+
+    players.appendChild(box);
   }
-});
+
+  /* TABLE */
+
+  const table =
+    state.table ||
+    state.trick ||
+    [];
+
+  const center =
+    e("centerCards");
+
+  center.innerHTML = "";
+
+  const rotations = [
+    "-14deg",
+    "10deg",
+    "-5deg",
+    "13deg",
+    "-10deg",
+    "6deg"
+  ];
+
+  table.forEach(
+    (play,index)=>{
+
+      const card =
+        document.createElement(
+          "div"
+        );
+
+      card.className =
+        "card playedCard";
+
+      if(
+        cardIsRed(play.card)
+      ){
+        card.classList.add(
+          "red"
+        );
+      }
+
+      card.style.setProperty(
+        "--rot",
+        rotations[
+          index %
+          rotations.length
+        ]
+      );
+
+      card.innerHTML =
+        cardHTML(
+          play.card
+        );
+
+      center.appendChild(card);
+    }
+  );
+
+  e("playedCount")
+    .textContent =
+    table.length;
+
+  if(state.openingRank){
+
+    e("firstCard")
+      .textContent =
+      state.openingRank;
+
+    e("cutsAllowed")
+      .textContent =
+      `${state.openingRank}, 7 sau 8`;
+
+  }else{
+
+    e("firstCard")
+      .textContent =
+      "-";
+
+    e("cutsAllowed")
+      .textContent =
+      "7 și 8";
+  }
+
+  /* HAND */
+
+  const hand =
+    e("hand");
+
+  hand.innerHTML = "";
+
+  myHand.forEach(
+    (card,index)=>{
+
+      const c =
+        document.createElement(
+          "div"
+        );
+
+      c.className =
+        "card";
+
+      if(cardIsRed(card)){
+        c.classList.add(
+          "red"
+        );
+      }
+
+      let canPlay =
+        state.started &&
+        state.turn === mySeat &&
+        !state.awaitingDecision;
+
+      /*
+        Dacă ai ales CONTINUĂ,
+        doar 7 / 8 / openingRank
+        pot fi selectate.
+      */
+      if(
+        state.continuationMode &&
+        state.turn === mySeat
+      ){
+
+        canPlay =
+          card.rank === "7" ||
+          card.rank === "8" ||
+          card.rank === state.openingRank;
+      }
+
+      if(canPlay){
+
+        c.classList.add(
+          "canPlay"
+        );
+
+        c.onclick =
+          ()=>playCard(index);
+
+      }else{
+
+        c.classList.add(
+          "disabled"
+        );
+      }
+
+      c.innerHTML =
+        cardHTML(card);
+
+      hand.appendChild(c);
+    }
+  );
+}
+
+function showError(message){
+
+  e("error")
+    .textContent =
+    message;
+}
+
+</script>
+
+</body>
+
+</html>
