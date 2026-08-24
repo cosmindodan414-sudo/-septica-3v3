@@ -17,18 +17,103 @@ const rooms = new Map();
 
 const suits = ["♠", "♥", "♦", "♣"];
 
-const BOT_DELAY = 2000;
-const BOT_DECISION_DELAY = 1500;
+const TEAM_1_SEATS = [0, 2, 4];
+const TEAM_2_SEATS = [1, 3, 5];
+
+const BOT_DELAY = 2200;
+const BOT_DECISION_DELAY = 1600;
+
+const ALLOWED_EMOJIS = [
+  "😂",
+  "❤️",
+  "😡",
+  "😭",
+  "👍",
+  "👎",
+  "🔥",
+  "👏"
+];
+
+const REPORT_REASONS = [
+  "A spus ce cărți are",
+  "I-a spus colegului ce să joace",
+  "A coordonat jocul prin voce",
+  "Altă trișare"
+];
 
 /* =====================================================
-   GENERAL
+   ECHIPE
+===================================================== */
+
+function teamForSeat(seat) {
+  return seat % 2 === 0 ? 1 : 2;
+}
+
+function otherTeam(team) {
+  return team === 1 ? 2 : 1;
+}
+
+function seatsForTeam(team) {
+  return team === 1
+    ? TEAM_1_SEATS
+    : TEAM_2_SEATS;
+}
+
+function firstFreeSeatForTeam(room, team) {
+  for (const seat of seatsForTeam(team)) {
+    if (!room.players[seat]) {
+      return seat;
+    }
+  }
+
+  return -1;
+}
+
+function teamCount(room, team) {
+  return seatsForTeam(team)
+    .filter(seat => room.players[seat])
+    .length;
+}
+
+function playerCount(room) {
+  return room.players.filter(Boolean).length;
+}
+
+function teamsAreValid(room) {
+  return (
+    teamCount(room, 1) === 3 &&
+    teamCount(room, 2) === 3
+  );
+}
+
+function firstHumanPlayer(room) {
+  return room.players.find(
+    player =>
+      player &&
+      !player.bot &&
+      player.connected
+  );
+}
+
+/* =====================================================
+   CĂRȚI
 ===================================================== */
 
 function shuffle(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+  for (
+    let i = array.length - 1;
+    i > 0;
+    i--
+  ) {
+    const j =
+      Math.floor(
+        Math.random() * (i + 1)
+      );
 
-    [array[i], array[j]] = [
+    [
+      array[i],
+      array[j]
+    ] = [
       array[j],
       array[i]
     ];
@@ -38,7 +123,7 @@ function shuffle(array) {
 function makeDeck() {
   const deck = [];
 
-  // 4 x 7
+  // 4 șeptari
   for (const suit of suits) {
     deck.push({
       rank: "7",
@@ -46,8 +131,9 @@ function makeDeck() {
     });
   }
 
-  // doar 2 x 8
+  // doar 2 optari
   const eightSuits = [...suits];
+
   shuffle(eightSuits);
 
   deck.push({
@@ -60,7 +146,7 @@ function makeDeck() {
     suit: eightSuits[1]
   });
 
-  // câte 4 din restul
+  // 9,10,J,Q,K,A x4
   for (
     const rank of [
       "9",
@@ -91,10 +177,7 @@ function isPoint(card) {
   );
 }
 
-function isCut(
-  card,
-  openingRank
-) {
+function isCut(card, openingRank) {
   return (
     card.rank === "7" ||
     card.rank === "8" ||
@@ -115,71 +198,30 @@ function countPoints(table) {
   );
 }
 
+/* =====================================================
+   CAMERE
+===================================================== */
+
 function createRoomCode() {
   let code;
 
   do {
-    code = String(
-      Math.floor(
-        100000 +
-        Math.random() * 900000
-      )
-    );
-  } while (rooms.has(code));
+    code =
+      String(
+        Math.floor(
+          100000 +
+          Math.random() * 900000
+        )
+      );
+  } while (
+    rooms.has(code)
+  );
 
   return code;
 }
 
-function firstFreeSeat(room) {
-  return room.players.findIndex(
-    player =>
-      player === null
-  );
-}
-
-function playerCount(room) {
-  return room.players
-    .filter(Boolean)
-    .length;
-}
-
-function teamCount(
-  room,
-  team
-) {
-  return room.players
-    .filter(
-      player =>
-        player &&
-        player.team === team
-    )
-    .length;
-}
-
-function teamsAreValid(room) {
-  return (
-    teamCount(room, 1) === 3 &&
-    teamCount(room, 2) === 3
-  );
-}
-
-function firstHumanPlayer(room) {
-  return room.players.find(
-    player =>
-      player &&
-      !player.bot &&
-      player.connected
-  );
-}
-
-function nextSeat(seat) {
-  return (
-    seat + 1
-  ) % 6;
-}
-
 /* =====================================================
-   PUBLIC STATE
+   STATE
 ===================================================== */
 
 function publicState(room) {
@@ -193,9 +235,12 @@ function publicState(room) {
     gameFinished:
       room.gameFinished,
 
+    gameId:
+      room.gameId,
+
     players:
       room.players.map(
-        player => {
+        (player, seat) => {
 
           if (!player) {
             return null;
@@ -206,21 +251,26 @@ function publicState(room) {
               player.name,
 
             team:
-              player.team,
+              teamForSeat(seat),
+
+            bot:
+              !!player.bot,
 
             connected:
               player.connected,
 
-            bot:
-              !!player.bot
+            voiceEnabled:
+              !!player.voiceEnabled,
+
+            speaking:
+              !!player.speaking
           };
         }
       ),
 
     handCounts:
       room.hands.map(
-        hand =>
-          hand.length
+        hand => hand.length
       ),
 
     matchScore1:
@@ -241,6 +291,9 @@ function publicState(room) {
     piles2:
       room.piles2,
 
+    roundNumber:
+      room.roundNumber,
+
     turn:
       room.turn,
 
@@ -253,23 +306,20 @@ function publicState(room) {
     table:
       room.table,
 
-    trick:
-      room.table,
-
     awaitingDecision:
       room.awaitingDecision,
 
     continuationMode:
       room.continuationMode,
 
-    lastResult:
-      room.lastResult,
-
     history:
       room.history,
 
-    roundNumber:
-      room.roundNumber,
+    lastResult:
+      room.lastResult,
+
+    cheatingForfeit:
+      room.cheatingForfeit,
 
     message:
       room.message
@@ -277,10 +327,12 @@ function publicState(room) {
 }
 
 function sendState(room) {
-  io.to(room.code).emit(
-    "state",
-    publicState(room)
-  );
+  io
+    .to(room.code)
+    .emit(
+      "state",
+      publicState(room)
+    );
 
   room.players.forEach(
     (player, seat) => {
@@ -313,6 +365,10 @@ function sendState(room) {
    GAME HELPERS
 ===================================================== */
 
+function nextSeat(seat) {
+  return (seat + 1) % 6;
+}
+
 function openerHasContinuation(room) {
   if (
     room.opener === null ||
@@ -334,25 +390,28 @@ function openerHasContinuation(room) {
 
 function gameIsFinished(room) {
   return room.hands.every(
-    hand =>
-      hand.length === 0
+    hand => hand.length === 0
   );
 }
 
+function clearBotTimer(room) {
+  if (room.botTimer) {
+    clearTimeout(room.botTimer);
+    room.botTimer = null;
+  }
+}
+
 /* =====================================================
-   FINAL PARTIDĂ
+   FINAL PARTIDĂ NORMALĂ
 ===================================================== */
 
 function finishGame(room) {
+  clearBotTimer(room);
+
   room.started = false;
-
   room.gameFinished = true;
-
-  room.awaitingDecision =
-    false;
-
-  room.continuationMode =
-    false;
+  room.awaitingDecision = false;
+  room.continuationMode = false;
 
   let winnerTeam = null;
   let loserTeam = null;
@@ -363,7 +422,6 @@ function finishGame(room) {
   ) {
     winnerTeam = 1;
     loserTeam = 2;
-
     room.matchScore1++;
   }
 
@@ -373,7 +431,6 @@ function finishGame(room) {
   ) {
     winnerTeam = 2;
     loserTeam = 1;
-
     room.matchScore2++;
   }
 
@@ -399,34 +456,18 @@ function finishGame(room) {
 
   let special = "";
 
-  /*
-    PIELE =
-    echipa pierzătoare
-    nu a luat nicio grămadă.
-  */
-
   if (loserPiles === 0) {
     special = "PIELE";
   }
 
-  /*
-    BUZĂ =
-    echipa pierzătoare
-    a luat grămezi,
-    dar doar caraboabe,
-    deci 0 puncte.
-  */
-
-  else if (
-    loserPoints === 0
-  ) {
+  else if (loserPoints === 0) {
     special = "BUZĂ";
   }
 
   room.lastResult =
     special
       ? `Echipa ${loserTeam}: ${special}`
-      : `Echipa ${winnerTeam} câștigă partida`;
+      : `Echipa ${winnerTeam} câștigă`;
 
   room.message =
     `Partida s-a terminat ${room.cardPoints1}-${room.cardPoints2}. ` +
@@ -439,39 +480,96 @@ function finishGame(room) {
 }
 
 /* =====================================================
-   FINAL RUNDĂ / GRĂMADĂ
+   PIERDERE PRIN TRIȘARE
+===================================================== */
+
+function forfeitForCheating(
+  room,
+  cheatingTeam,
+  reasons
+) {
+  if (
+    !room.started ||
+    room.gameFinished
+  ) {
+    return;
+  }
+
+  clearBotTimer(room);
+
+  const winnerTeam =
+    otherTeam(cheatingTeam);
+
+  room.started = false;
+  room.gameFinished = true;
+
+  room.awaitingDecision = false;
+  room.continuationMode = false;
+
+  room.cheatingForfeit = true;
+
+  if (winnerTeam === 1) {
+    room.matchScore1++;
+  } else {
+    room.matchScore2++;
+  }
+
+  room.lastResult =
+    `🚩 Echipa ${cheatingTeam} pierde prin trișare`;
+
+  room.message =
+    `🚩 Partida s-a încheiat pentru trișare. ` +
+    `Echipa ${cheatingTeam} pierde partida. ` +
+    `Echipa ${winnerTeam} primește +1 la scor.`;
+
+  room.history.push({
+    type:
+      "cheating",
+
+    cheatingTeam,
+
+    winnerTeam,
+
+    reasons:
+      [...new Set(reasons)]
+  });
+}
+
+/* =====================================================
+   TERMINĂ GRĂMADA
 ===================================================== */
 
 function finishPile(room) {
   const points =
-    countPoints(room.table);
+    countPoints(
+      room.table
+    );
 
   const winnerSeat =
     room.lastCutter;
 
-  const winnerPlayer =
-    room.players[winnerSeat];
-
   const winnerTeam =
-    winnerPlayer.team;
+    teamForSeat(
+      winnerSeat
+    );
+
+  const winnerPlayer =
+    room.players[
+      winnerSeat
+    ];
 
   if (winnerTeam === 1) {
-    room.cardPoints1 +=
-      points;
-
+    room.cardPoints1 += points;
     room.piles1++;
   } else {
-    room.cardPoints2 +=
-      points;
-
+    room.cardPoints2 += points;
     room.piles2++;
   }
 
-  /*
-    SALVĂM ISTORICUL
-  */
-
   room.history.push({
+    type:
+      "round",
+
     round:
       room.roundNumber,
 
@@ -524,37 +622,21 @@ function finishPile(room) {
   room.message =
     `${winnerPlayer?.name || "Jucătorul"} a luat cărțile pentru Echipa ${winnerTeam}. ` +
     (
-      points > 0
-        ? `${points} punct${points === 1 ? "" : "e"} în grămadă.`
-        : "0 puncte în grămadă."
+      points === 0
+        ? "0 puncte."
+        : `${points} punct${points === 1 ? "" : "e"}.`
     );
 
   room.table = [];
+  room.openingRank = null;
+  room.cardsInCycle = 0;
+  room.awaitingDecision = false;
+  room.continuationMode = false;
 
-  room.openingRank =
-    null;
-
-  room.cardsInCycle =
-    0;
-
-  room.awaitingDecision =
-    false;
-
-  room.continuationMode =
-    false;
-
-  if (
-    gameIsFinished(room)
-  ) {
+  if (gameIsFinished(room)) {
     finishGame(room);
     return;
   }
-
-  /*
-    Jucătorul care a făcut
-    ultima tăiere începe
-    următoarea rundă.
-  */
 
   room.roundNumber++;
 
@@ -563,9 +645,6 @@ function finishPile(room) {
 
   room.turn =
     winnerSeat;
-
-  room.controlTeam =
-    winnerTeam;
 
   room.lastCutter =
     winnerSeat;
@@ -586,12 +665,6 @@ function afterCardPlayed(room) {
 
     return;
   }
-
-  /*
-    După 6 cărți,
-    opener-ul decide
-    doar dacă poate continua.
-  */
 
   if (
     openerHasContinuation(room)
@@ -615,10 +688,12 @@ function afterCardPlayed(room) {
 }
 
 /* =====================================================
-   START PARTIDĂ INTERN
+   START PARTIDĂ
 ===================================================== */
 
 function startCurrentGame(room) {
+  clearBotTimer(room);
+
   const deck =
     makeDeck();
 
@@ -646,64 +721,43 @@ function startCurrentGame(room) {
     }
   }
 
-  room.cardPoints1 =
-    0;
+  room.gameId++;
 
-  room.cardPoints2 =
-    0;
+  room.cardPoints1 = 0;
+  room.cardPoints2 = 0;
 
-  room.piles1 =
-    0;
+  room.piles1 = 0;
+  room.piles2 = 0;
 
-  room.piles2 =
-    0;
+  room.table = [];
+  room.history = [];
 
-  room.table =
-    [];
+  room.roundNumber = 1;
 
-  room.history =
-    [];
+  room.cardsInCycle = 0;
 
-  room.roundNumber =
-    1;
+  room.awaitingDecision = false;
+  room.continuationMode = false;
 
-  room.cardsInCycle =
-    0;
+  room.openingRank = null;
 
-  room.awaitingDecision =
-    false;
+  room.opener = 0;
+  room.turn = 0;
 
-  room.continuationMode =
-    false;
+  room.lastCutter = null;
 
-  room.openingRank =
-    null;
+  room.gameFinished = false;
 
-  /*
-    Doar prima rundă
-    începe Seat 0.
-  */
+  room.cheatingForfeit = false;
 
-  room.opener =
-    0;
+  room.cheatReports = {
+    1: new Map(),
+    2: new Map()
+  };
 
-  room.turn =
-    0;
+  room.lastResult = "";
 
-  room.controlTeam =
-    room.players[0].team;
-
-  room.lastCutter =
-    null;
-
-  room.gameFinished =
-    false;
-
-  room.lastResult =
-    "";
-
-  room.started =
-    true;
+  room.started = true;
 
   room.message =
     `${room.players[0].name} începe prima rundă.`;
@@ -713,7 +767,12 @@ function startCurrentGame(room) {
    BOȚI
 ===================================================== */
 
-function scheduleBot(room) {
+function scheduleBot(
+  room,
+  delay = BOT_DELAY
+) {
+  clearBotTimer(room);
+
   if (!room.started) {
     return;
   }
@@ -730,12 +789,14 @@ function scheduleBot(room) {
     return;
   }
 
-  setTimeout(
-    () => {
-      runBot(room);
-    },
-    BOT_DELAY
-  );
+  room.botTimer =
+    setTimeout(
+      () => {
+        room.botTimer = null;
+        runBot(room);
+      },
+      delay
+    );
 }
 
 function runBot(room) {
@@ -747,7 +808,9 @@ function runBot(room) {
     room.turn;
 
   const bot =
-    room.players[seat];
+    room.players[
+      seat
+    ];
 
   if (
     !bot ||
@@ -756,64 +819,46 @@ function runBot(room) {
     return;
   }
 
-  /*
-    BOTUL DECIDE
-  */
-
   if (
     room.awaitingDecision &&
     seat === room.opener
   ) {
-    setTimeout(
-      () => {
+    if (
+      openerHasContinuation(
+        room
+      )
+    ) {
+      room.awaitingDecision =
+        false;
 
-        if (
-          !room.started ||
-          !room.awaitingDecision
-        ) {
-          return;
-        }
+      room.continuationMode =
+        true;
 
-        if (
-          openerHasContinuation(
-            room
-          )
-        ) {
-          room.awaitingDecision =
-            false;
+      room.message =
+        `${bot.name} continuă runda.`;
 
-          room.continuationMode =
-            true;
+      sendState(room);
 
-          room.message =
-            `${bot.name} a ales să continue.`;
+      scheduleBot(
+        room,
+        BOT_DECISION_DELAY
+      );
 
-          sendState(room);
+      return;
+    }
 
-          setTimeout(
-            () => {
-              runBot(room);
-            },
-            BOT_DECISION_DELAY
-          );
+    finishPile(room);
 
-          return;
-        }
-
-        finishPile(room);
-
-        sendState(room);
-
-        scheduleBot(room);
-      },
-      BOT_DECISION_DELAY
-    );
+    sendState(room);
+    scheduleBot(room);
 
     return;
   }
 
   const hand =
-    room.hands[seat];
+    room.hands[
+      seat
+    ];
 
   if (
     !hand ||
@@ -823,11 +868,6 @@ function runBot(room) {
   }
 
   let index = 0;
-
-  /*
-    Dacă e continuare,
-    obligatoriu tăiere validă.
-  */
 
   if (
     room.continuationMode
@@ -843,30 +883,19 @@ function runBot(room) {
 
     if (index === -1) {
       finishPile(room);
-
       sendState(room);
-
       scheduleBot(room);
-
       return;
     }
 
-    room.cardsInCycle =
-      0;
-
-    room.continuationMode =
-      false;
+    room.cardsInCycle = 0;
+    room.continuationMode = false;
   }
-
-  /*
-    Botul preferă o tăiere,
-    dar nu instant.
-  */
 
   else if (
     room.table.length > 0
   ) {
-    const cuttingIndex =
+    const cutIndex =
       hand.findIndex(
         card =>
           isCut(
@@ -876,10 +905,10 @@ function runBot(room) {
       );
 
     if (
-      cuttingIndex !== -1
+      cutIndex !== -1
     ) {
       index =
-        cuttingIndex;
+        cutIndex;
     }
   }
 
@@ -894,17 +923,9 @@ function runBot(room) {
   if (
     room.table.length === 0
   ) {
-    room.opener =
-      seat;
-
-    room.openingRank =
-      card.rank;
-
-    room.controlTeam =
-      bot.team;
-
-    room.lastCutter =
-      seat;
+    room.opener = seat;
+    room.openingRank = card.rank;
+    room.lastCutter = seat;
   }
 
   const cut =
@@ -914,14 +935,11 @@ function runBot(room) {
     );
 
   if (cut) {
-    room.controlTeam =
-      bot.team;
-
     room.lastCutter =
       seat;
 
     room.message =
-      `${bot.name} a tăiat. Echipa ${bot.team} are momentan cărțile.`;
+      `${bot.name} a tăiat. Echipa ${teamForSeat(seat)} are momentan mâna.`;
   } else {
     room.message =
       `${bot.name} a jucat ${card.rank}${card.suit}.`;
@@ -941,12 +959,11 @@ function runBot(room) {
   afterCardPlayed(room);
 
   sendState(room);
-
   scheduleBot(room);
 }
 
 /* =====================================================
-   SOCKET
+   SOCKET.IO
 ===================================================== */
 
 io.on(
@@ -954,7 +971,7 @@ io.on(
   socket => {
 
     /* =========================
-       CREATE ROOM
+       CREATE
     ========================= */
 
     socket.on(
@@ -975,9 +992,7 @@ io.on(
           team !== 2
         ) {
           return callback({
-            ok:
-              false,
-
+            ok: false,
             error:
               "Alege Echipa 1 sau Echipa 2."
           });
@@ -986,28 +1001,36 @@ io.on(
         const code =
           createRoomCode();
 
-        const playerName =
-          String(
-            name || ""
-          ).trim() ||
-          "Jucător";
-
         const players =
           Array(6).fill(null);
 
-        players[0] = {
+        const hostSeat =
+          team === 1
+            ? 0
+            : 1;
+
+        players[
+          hostSeat
+        ] = {
           socketId:
             socket.id,
 
           name:
-            playerName,
-
-          team,
+            String(
+              name || ""
+            ).trim() ||
+            "Jucător",
 
           connected:
             true,
 
           bot:
+            false,
+
+          voiceEnabled:
+            false,
+
+          speaking:
             false
         };
 
@@ -1031,6 +1054,9 @@ io.on(
           gameFinished:
             false,
 
+          gameId:
+            0,
+
           matchScore1:
             0,
 
@@ -1049,20 +1075,20 @@ io.on(
           piles2:
             0,
 
+          roundNumber:
+            1,
+
           turn:
-            0,
+            hostSeat,
 
           opener:
-            0,
+            hostSeat,
 
           openingRank:
             null,
 
           table:
             [],
-
-          controlTeam:
-            team,
 
           lastCutter:
             null,
@@ -1079,11 +1105,19 @@ io.on(
           history:
             [],
 
-          roundNumber:
-            1,
-
           lastResult:
             "",
+
+          cheatingForfeit:
+            false,
+
+          cheatReports: {
+            1: new Map(),
+            2: new Map()
+          },
+
+          botTimer:
+            null,
 
           message:
             "Camera a fost creată."
@@ -1099,13 +1133,9 @@ io.on(
         );
 
         callback({
-          ok:
-            true,
-
+          ok: true,
           code,
-
-          seat:
-            0
+          seat: hostSeat
         });
 
         sendState(room);
@@ -1113,7 +1143,7 @@ io.on(
     );
 
     /* =========================
-       JOIN ROOM
+       JOIN
     ========================= */
 
     socket.on(
@@ -1140,74 +1170,35 @@ io.on(
 
         if (!room) {
           return callback({
-            ok:
-              false,
-
+            ok: false,
             error:
               "Camera nu există."
           });
         }
 
-        if (
-          room.started
-        ) {
+        if (room.started) {
           return callback({
-            ok:
-              false,
-
+            ok: false,
             error:
               "Partida a început deja."
           });
         }
 
-        if (
-          team !== 1 &&
-          team !== 2
-        ) {
-          return callback({
-            ok:
-              false,
-
-            error:
-              "Alege o echipă."
-          });
-        }
-
-        if (
-          teamCount(
+        const seat =
+          firstFreeSeatForTeam(
             room,
             team
-          ) >= 3
-        ) {
-          return callback({
-            ok:
-              false,
-
-            error:
-              `Echipa ${team} are deja 3 jucători.`
-          });
-        }
-
-        const seat =
-          firstFreeSeat(room);
+          );
 
         if (
           seat === -1
         ) {
           return callback({
-            ok:
-              false,
-
+            ok: false,
             error:
-              "Camera este plină."
+              `Echipa ${team} este plină.`
           });
         }
-
-        const playerName =
-          String(
-            name || ""
-          ).trim() ||
-          "Jucător";
 
         room.players[
           seat
@@ -1216,32 +1207,34 @@ io.on(
             socket.id,
 
           name:
-            playerName,
-
-          team,
+            String(
+              name || ""
+            ).trim() ||
+            `Jucător ${seat + 1}`,
 
           connected:
             true,
 
           bot:
+            false,
+
+          voiceEnabled:
+            false,
+
+          speaking:
             false
         };
 
-        socket.join(
-          code
-        );
+        socket.join(code);
+
+        callback({
+          ok: true,
+          code,
+          seat
+        });
 
         room.message =
           `${playerCount(room)}/6 jucători la masă.`;
-
-        callback({
-          ok:
-            true,
-
-          code,
-
-          seat
-        });
 
         sendState(room);
       }
@@ -1268,21 +1261,15 @@ io.on(
 
         if (!room) {
           return callback({
-            ok:
-              false,
-
+            ok: false,
             error:
               "Camera nu există."
           });
         }
 
-        if (
-          room.started
-        ) {
+        if (room.started) {
           return callback({
-            ok:
-              false,
-
+            ok: false,
             error:
               "Nu poți schimba echipa după start."
           });
@@ -1291,78 +1278,73 @@ io.on(
         team =
           Number(team);
 
-        if (
-          team !== 1 &&
-          team !== 2
-        ) {
-          return callback({
-            ok:
-              false,
-
-            error:
-              "Echipă invalidă."
-          });
-        }
-
-        const seat =
+        const oldSeat =
           room.players.findIndex(
             player =>
               player &&
+              !player.bot &&
               player.socketId ===
                 socket.id
           );
 
         if (
-          seat === -1
+          oldSeat === -1
         ) {
           return callback({
-            ok:
-              false,
-
+            ok: false,
             error:
               "Nu ești în cameră."
           });
         }
 
-        const player =
-          room.players[
-            seat
-          ];
-
         if (
-          player.team ===
+          teamForSeat(oldSeat) ===
           team
         ) {
           return callback({
-            ok:
-              true
+            ok: true
           });
         }
 
-        if (
-          teamCount(
+        const newSeat =
+          firstFreeSeatForTeam(
             room,
             team
-          ) >= 3
+          );
+
+        if (
+          newSeat === -1
         ) {
           return callback({
-            ok:
-              false,
-
+            ok: false,
             error:
               `Echipa ${team} este plină.`
           });
         }
 
-        player.team =
-          team;
+        const player =
+          room.players[
+            oldSeat
+          ];
 
-        room.message =
-          `${player.name} a trecut în Echipa ${team}.`;
+        room.players[
+          oldSeat
+        ] = null;
+
+        room.players[
+          newSeat
+        ] = player;
+
+        room.hands[
+          oldSeat
+        ] = [];
+
+        room.hands[
+          newSeat
+        ] = [];
 
         callback({
-          ok:
-            true
+          ok: true
         });
 
         sendState(room);
@@ -1370,7 +1352,7 @@ io.on(
     );
 
     /* =========================
-       BOȚI + START AUTOMAT
+       BOȚI
     ========================= */
 
     socket.on(
@@ -1387,9 +1369,7 @@ io.on(
 
         if (!room) {
           return callback({
-            ok:
-              false,
-
+            ok: false,
             error:
               "Camera nu există."
           });
@@ -1400,53 +1380,29 @@ io.on(
           room.hostId
         ) {
           return callback({
-            ok:
-              false,
-
+            ok: false,
             error:
               "Doar host-ul poate porni testul."
           });
         }
 
-        if (
-          room.started
-        ) {
+        if (room.started) {
           return callback({
-            ok:
-              false,
-
+            ok: false,
             error:
               "Partida este deja pornită."
           });
         }
 
-        /*
-          Umplem exact până la
-          3 vs 3.
-        */
-
         for (
-          let team = 1;
-          team <= 2;
-          team++
+          const seat of [
+            ...TEAM_1_SEATS,
+            ...TEAM_2_SEATS
+          ]
         ) {
-          while (
-            teamCount(
-              room,
-              team
-            ) < 3
+          if (
+            !room.players[seat]
           ) {
-            const seat =
-              firstFreeSeat(
-                room
-              );
-
-            if (
-              seat === -1
-            ) {
-              break;
-            }
-
             room.players[
               seat
             ] = {
@@ -1456,48 +1412,34 @@ io.on(
               name:
                 `Bot ${seat + 1}`,
 
-              team,
-
               connected:
                 true,
 
               bot:
-                true
+                true,
+
+              voiceEnabled:
+                false,
+
+              speaking:
+                false
             };
           }
         }
 
-        if (
-          !teamsAreValid(
-            room
-          )
-        ) {
-          return callback({
-            ok:
-              false,
-
-            error:
-              "Nu s-au putut forma echipe 3 vs 3."
-          });
-        }
-
-        startCurrentGame(
-          room
-        );
+        startCurrentGame(room);
 
         callback({
-          ok:
-            true
+          ok: true
         });
 
         sendState(room);
-
         scheduleBot(room);
       }
     );
 
     /* =========================
-       START NORMAL
+       START
     ========================= */
 
     socket.on(
@@ -1514,9 +1456,7 @@ io.on(
 
         if (!room) {
           return callback({
-            ok:
-              false,
-
+            ok: false,
             error:
               "Camera nu există."
           });
@@ -1527,52 +1467,30 @@ io.on(
           room.hostId
         ) {
           return callback({
-            ok:
-              false,
-
+            ok: false,
             error:
               "Doar host-ul poate porni."
           });
         }
 
         if (
-          playerCount(room) !==
-          6
+          playerCount(room) !== 6 ||
+          !teamsAreValid(room)
         ) {
           return callback({
-            ok:
-              false,
-
+            ok: false,
             error:
-              "Trebuie să fie 6 jucători."
+              "Trebuie să fie 3 vs 3."
           });
         }
 
-        if (
-          !teamsAreValid(
-            room
-          )
-        ) {
-          return callback({
-            ok:
-              false,
-
-            error:
-              "Trebuie să fie exact 3 jucători în fiecare echipă."
-          });
-        }
-
-        startCurrentGame(
-          room
-        );
+        startCurrentGame(room);
 
         callback({
-          ok:
-            true
+          ok: true
         });
 
         sendState(room);
-
         scheduleBot(room);
       }
     );
@@ -1593,18 +1511,8 @@ io.on(
             String(code)
           );
 
-        if (!room) {
-          return callback({
-            ok:
-              false,
-
-            error:
-              "Camera nu există."
-          });
-        }
-
         const seat =
-          room.players.findIndex(
+          room?.players.findIndex(
             player =>
               player &&
               player.socketId ===
@@ -1612,16 +1520,14 @@ io.on(
           );
 
         if (
-          seat !==
-            room.opener ||
+          !room ||
+          seat !== room.opener ||
           !room.awaitingDecision
         ) {
           return callback({
-            ok:
-              false,
-
+            ok: false,
             error:
-              "Nu poți decide acum."
+              "Nu poți continua acum."
           });
         }
 
@@ -1631,9 +1537,7 @@ io.on(
           )
         ) {
           return callback({
-            ok:
-              false,
-
+            ok: false,
             error:
               "Nu ai cu ce continua."
           });
@@ -1645,15 +1549,8 @@ io.on(
         room.continuationMode =
           true;
 
-        room.turn =
-          room.opener;
-
-        room.message =
-          `${room.players[seat].name} continuă runda.`;
-
         callback({
-          ok:
-            true
+          ok: true
         });
 
         sendState(room);
@@ -1661,7 +1558,7 @@ io.on(
     );
 
     /* =========================
-       STOP ROUND
+       STOP
     ========================= */
 
     socket.on(
@@ -1676,18 +1573,8 @@ io.on(
             String(code)
           );
 
-        if (!room) {
-          return callback({
-            ok:
-              false,
-
-            error:
-              "Camera nu există."
-          });
-        }
-
         const seat =
-          room.players.findIndex(
+          room?.players.findIndex(
             player =>
               player &&
               player.socketId ===
@@ -1695,36 +1582,30 @@ io.on(
           );
 
         if (
-          seat !==
-            room.opener ||
+          !room ||
+          seat !== room.opener ||
           !room.awaitingDecision
         ) {
           return callback({
-            ok:
-              false,
-
+            ok: false,
             error:
               "Nu poți opri acum."
           });
         }
 
-        finishPile(
-          room
-        );
+        finishPile(room);
 
         callback({
-          ok:
-            true
+          ok: true
         });
 
         sendState(room);
-
         scheduleBot(room);
       }
     );
 
     /* =========================
-       PLAY CARD
+       PLAY
     ========================= */
 
     socket.on(
@@ -1744,9 +1625,7 @@ io.on(
 
         if (!room) {
           return callback({
-            ok:
-              false,
-
+            ok: false,
             error:
               "Camera nu există."
           });
@@ -1756,30 +1635,18 @@ io.on(
           room.players.findIndex(
             player =>
               player &&
+              !player.bot &&
               player.socketId ===
                 socket.id
           );
 
         if (
-          seat === -1
-        ) {
-          return callback({
-            ok:
-              false,
-
-            error:
-              "Nu ești în cameră."
-          });
-        }
-
-        if (
+          seat === -1 ||
           !room.started ||
           seat !== room.turn
         ) {
           return callback({
-            ok:
-              false,
-
+            ok: false,
             error:
               "Nu este rândul tău."
           });
@@ -1789,34 +1656,25 @@ io.on(
           room.awaitingDecision
         ) {
           return callback({
-            ok:
-              false,
-
+            ok: false,
             error:
               "Alege Continuă sau Oprește."
           });
         }
 
         const hand =
-          room.hands[
-            seat
-          ];
+          room.hands[seat];
 
         index =
           Number(index);
 
         if (
-          !Number.isInteger(
-            index
-          ) ||
+          !Number.isInteger(index) ||
           index < 0 ||
-          index >=
-            hand.length
+          index >= hand.length
         ) {
           return callback({
-            ok:
-              false,
-
+            ok: false,
             error:
               "Carte invalidă."
           });
@@ -1835,19 +1693,14 @@ io.on(
             )
           ) {
             return callback({
-              ok:
-                false,
-
+              ok: false,
               error:
                 `Trebuie ${room.openingRank}, 7 sau 8.`
             });
           }
 
-          room.cardsInCycle =
-            0;
-
-          room.continuationMode =
-            false;
+          room.cardsInCycle = 0;
+          room.continuationMode = false;
         }
 
         hand.splice(
@@ -1856,22 +1709,11 @@ io.on(
         );
 
         if (
-          room.table.length ===
-          0
+          room.table.length === 0
         ) {
-          room.opener =
-            seat;
-
-          room.openingRank =
-            card.rank;
-
-          room.controlTeam =
-            room.players[
-              seat
-            ].team;
-
-          room.lastCutter =
-            seat;
+          room.opener = seat;
+          room.openingRank = card.rank;
+          room.lastCutter = seat;
         }
 
         const cut =
@@ -1881,16 +1723,10 @@ io.on(
           );
 
         if (cut) {
-          room.controlTeam =
-            room.players[
-              seat
-            ].team;
-
-          room.lastCutter =
-            seat;
+          room.lastCutter = seat;
 
           room.message =
-            `${room.players[seat].name} a tăiat. Echipa ${room.controlTeam} are momentan mâna.`;
+            `${room.players[seat].name} a tăiat. Echipa ${teamForSeat(seat)} are momentan mâna.`;
         } else {
           room.message =
             `${room.players[seat].name} a jucat ${card.rank}${card.suit}.`;
@@ -1907,17 +1743,13 @@ io.on(
 
         room.cardsInCycle++;
 
-        afterCardPlayed(
-          room
-        );
+        afterCardPlayed(room);
 
         callback({
-          ok:
-            true
+          ok: true
         });
 
         sendState(room);
-
         scheduleBot(room);
       }
     );
@@ -1941,18 +1773,8 @@ io.on(
             String(code)
           );
 
-        if (!room) {
-          return callback?.({
-            ok:
-              false,
-
-            error:
-              "Camera nu există."
-          });
-        }
-
         const seat =
-          room.players.findIndex(
+          room?.players.findIndex(
             player =>
               player &&
               !player.bot &&
@@ -1961,12 +1783,11 @@ io.on(
           );
 
         if (
+          !room ||
           seat === -1
         ) {
           return callback?.({
-            ok:
-              false,
-
+            ok: false,
             error:
               "Nu ești în cameră."
           });
@@ -1984,11 +1805,7 @@ io.on(
 
         if (!text) {
           return callback?.({
-            ok:
-              false,
-
-            error:
-              "Mesaj gol."
+            ok: false
           });
         }
 
@@ -2007,9 +1824,505 @@ io.on(
           );
 
         callback?.({
-          ok:
-            true
+          ok: true
         });
+      }
+    );
+
+    /* =========================
+       EMOJI
+    ========================= */
+
+    socket.on(
+      "sendEmoji",
+      (
+        {
+          code,
+          emoji
+        },
+        callback
+      ) => {
+
+        const room =
+          rooms.get(
+            String(code)
+          );
+
+        const seat =
+          room?.players.findIndex(
+            player =>
+              player &&
+              !player.bot &&
+              player.socketId ===
+                socket.id
+          );
+
+        if (
+          !room ||
+          seat === -1 ||
+          !ALLOWED_EMOJIS.includes(
+            emoji
+          )
+        ) {
+          return callback?.({
+            ok: false
+          });
+        }
+
+        io
+          .to(room.code)
+          .emit(
+            "playerEmoji",
+            {
+              seat,
+              emoji
+            }
+          );
+
+        callback?.({
+          ok: true
+        });
+      }
+    );
+
+    /* =========================
+       RAPORT TRIȘARE
+    ========================= */
+
+    socket.on(
+      "reportCheating",
+      (
+        {
+          code,
+          reason
+        },
+        callback
+      ) => {
+
+        const room =
+          rooms.get(
+            String(code)
+          );
+
+        if (!room) {
+          return callback({
+            ok: false,
+            error:
+              "Camera nu există."
+          });
+        }
+
+        if (!room.started) {
+          return callback({
+            ok: false,
+            error:
+              "Poți raporta doar în timpul unei partide."
+          });
+        }
+
+        if (
+          !REPORT_REASONS.includes(
+            reason
+          )
+        ) {
+          return callback({
+            ok: false,
+            error:
+              "Motiv invalid."
+          });
+        }
+
+        const seat =
+          room.players.findIndex(
+            player =>
+              player &&
+              !player.bot &&
+              player.socketId ===
+                socket.id
+          );
+
+        if (
+          seat === -1
+        ) {
+          return callback({
+            ok: false,
+            error:
+              "Nu ești jucător în această cameră."
+          });
+        }
+
+        const reporterTeam =
+          teamForSeat(seat);
+
+        const reportedTeam =
+          otherTeam(
+            reporterTeam
+          );
+
+        /*
+        Același jucător
+        poate raporta o singură dată.
+        */
+
+        if (
+          room.cheatReports[
+            reportedTeam
+          ].has(seat)
+        ) {
+          return callback({
+            ok: false,
+            error:
+              "Ai raportat deja în această partidă."
+          });
+        }
+
+        room.cheatReports[
+          reportedTeam
+        ].set(
+          seat,
+          reason
+        );
+
+        const reports =
+          room.cheatReports[
+            reportedTeam
+          ];
+
+        /*
+        La două rapoarte diferite
+        echipa raportată pierde.
+        */
+
+        if (
+          reports.size >= 2
+        ) {
+          forfeitForCheating(
+            room,
+            reportedTeam,
+            [...reports.values()]
+          );
+
+          sendState(room);
+
+          io
+            .to(room.code)
+            .emit(
+              "cheatingConfirmed",
+              {
+                cheatingTeam:
+                  reportedTeam,
+
+                winnerTeam:
+                  reporterTeam
+              }
+            );
+
+          return callback({
+            ok: true,
+            forfeit: true
+          });
+        }
+
+        callback({
+          ok: true,
+          forfeit: false,
+          message:
+            "Raportul a fost trimis."
+        });
+      }
+    );
+
+    /* =========================
+       VOICE READY
+    ========================= */
+
+    socket.on(
+      "voiceReady",
+      (
+        { code },
+        callback
+      ) => {
+
+        const room =
+          rooms.get(
+            String(code)
+          );
+
+        if (!room) {
+          return callback({
+            ok: false,
+            error:
+              "Camera nu există."
+          });
+        }
+
+        const seat =
+          room.players.findIndex(
+            player =>
+              player &&
+              !player.bot &&
+              player.socketId ===
+                socket.id
+          );
+
+        if (
+          seat === -1
+        ) {
+          return callback({
+            ok: false,
+            error:
+              "Nu ești în cameră."
+          });
+        }
+
+        const player =
+          room.players[
+            seat
+          ];
+
+        player.voiceEnabled =
+          true;
+
+        player.speaking =
+          false;
+
+        const peers =
+          room.players
+            .map(
+              (
+                other,
+                otherSeat
+              ) => {
+
+                if (
+                  !other ||
+                  other.bot ||
+                  !other.voiceEnabled ||
+                  !other.socketId ||
+                  other.socketId ===
+                    socket.id
+                ) {
+                  return null;
+                }
+
+                return {
+                  socketId:
+                    other.socketId,
+
+                  seat:
+                    otherSeat,
+
+                  name:
+                    other.name
+                };
+              }
+            )
+            .filter(Boolean);
+
+        socket
+          .to(room.code)
+          .emit(
+            "voicePeerAvailable",
+            {
+              socketId:
+                socket.id,
+
+              seat,
+
+              name:
+                player.name
+            }
+          );
+
+        callback({
+          ok: true,
+          peers
+        });
+
+        sendState(room);
+      }
+    );
+
+    /* =========================
+       VOICE STOP
+    ========================= */
+
+    socket.on(
+      "voiceStopped",
+      ({ code }) => {
+
+        const room =
+          rooms.get(
+            String(code)
+          );
+
+        if (!room) {
+          return;
+        }
+
+        const seat =
+          room.players.findIndex(
+            player =>
+              player &&
+              player.socketId ===
+                socket.id
+          );
+
+        if (
+          seat === -1
+        ) {
+          return;
+        }
+
+        room.players[
+          seat
+        ].voiceEnabled =
+          false;
+
+        room.players[
+          seat
+        ].speaking =
+          false;
+
+        socket
+          .to(room.code)
+          .emit(
+            "voicePeerStopped",
+            {
+              socketId:
+                socket.id,
+
+              seat
+            }
+          );
+
+        sendState(room);
+      }
+    );
+
+    /* =========================
+       WEBRTC SIGNAL
+    ========================= */
+
+    socket.on(
+      "webrtcSignal",
+      (
+        {
+          code,
+          target,
+          data
+        }
+      ) => {
+
+        const room =
+          rooms.get(
+            String(code)
+          );
+
+        if (!room) {
+          return;
+        }
+
+        const senderSeat =
+          room.players.findIndex(
+            player =>
+              player &&
+              player.socketId ===
+                socket.id
+          );
+
+        const targetSeat =
+          room.players.findIndex(
+            player =>
+              player &&
+              player.socketId ===
+                target
+          );
+
+        if (
+          senderSeat === -1 ||
+          targetSeat === -1
+        ) {
+          return;
+        }
+
+        io
+          .to(target)
+          .emit(
+            "webrtcSignal",
+            {
+              from:
+                socket.id,
+
+              seat:
+                senderSeat,
+
+              data
+            }
+          );
+      }
+    );
+
+    /* =========================
+       SPEAKING
+    ========================= */
+
+    socket.on(
+      "voiceSpeaking",
+      (
+        {
+          code,
+          speaking
+        }
+      ) => {
+
+        const room =
+          rooms.get(
+            String(code)
+          );
+
+        if (!room) {
+          return;
+        }
+
+        const seat =
+          room.players.findIndex(
+            player =>
+              player &&
+              player.socketId ===
+                socket.id
+          );
+
+        if (
+          seat === -1
+        ) {
+          return;
+        }
+
+        const player =
+          room.players[
+            seat
+          ];
+
+        if (
+          !player.voiceEnabled
+        ) {
+          return;
+        }
+
+        player.speaking =
+          !!speaking;
+
+        io
+          .to(room.code)
+          .emit(
+            "voiceSpeaking",
+            {
+              seat,
+              speaking:
+                !!speaking
+            }
+          );
       }
     );
 
@@ -2032,36 +2345,21 @@ io.on(
             String(code)
           );
 
-        if (!room) {
-          return callback({
-            ok:
-              false,
-
-            error:
-              "Camera nu există."
-          });
-        }
-
         if (
+          !room ||
           socket.id !==
-          room.hostId
+            room.hostId
         ) {
           return callback({
-            ok:
-              false,
-
+            ok: false,
             error:
               "Doar host-ul poate da afară."
           });
         }
 
-        if (
-          room.started
-        ) {
+        if (room.started) {
           return callback({
-            ok:
-              false,
-
+            ok: false,
             error:
               "Nu poți da afară după start."
           });
@@ -2077,9 +2375,7 @@ io.on(
 
         if (!player) {
           return callback({
-            ok:
-              false,
-
+            ok: false,
             error:
               "Loc liber."
           });
@@ -2090,9 +2386,7 @@ io.on(
           room.hostId
         ) {
           return callback({
-            ok:
-              false,
-
+            ok: false,
             error:
               "Host-ul nu se poate scoate."
           });
@@ -2119,12 +2413,8 @@ io.on(
           seat
         ] = [];
 
-        room.message =
-          `${player.name} a fost scos din cameră.`;
-
         callback({
-          ok:
-            true
+          ok: true
         });
 
         sendState(room);
@@ -2163,15 +2453,32 @@ io.on(
               seat
             ];
 
-          if (
-            !room.started
-          ) {
+          player.voiceEnabled =
+            false;
+
+          player.speaking =
+            false;
+
+          socket
+            .to(room.code)
+            .emit(
+              "voicePeerStopped",
+              {
+                socketId:
+                  socket.id,
+
+                seat
+              }
+            );
+
+          if (!room.started) {
             room.players[
               seat
             ] = null;
 
-            room.message =
-              `${player.name} a ieșit din cameră.`;
+            room.hands[
+              seat
+            ] = [];
 
             if (
               socket.id ===
@@ -2182,12 +2489,14 @@ io.on(
                   room
                 );
 
-              if (
-                newHost
-              ) {
+              if (newHost) {
                 room.hostId =
                   newHost.socketId;
               } else {
+                clearBotTimer(
+                  room
+                );
+
                 rooms.delete(
                   room.code
                 );
@@ -2195,17 +2504,17 @@ io.on(
                 continue;
               }
             }
+          }
 
-            sendState(room);
-          } else {
+          else {
             player.connected =
               false;
 
             room.message =
               `${player.name} s-a deconectat.`;
-
-            sendState(room);
           }
+
+          sendState(room);
         }
       }
     );
