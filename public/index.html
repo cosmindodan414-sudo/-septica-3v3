@@ -1,1 +1,331 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Șeptică 3v3 Online</title>
 
+<style>
+body{
+  font-family:Arial,sans-serif;
+  background:#075b2b;
+  color:#fff;
+  margin:0;
+  padding:18px;
+  text-align:center
+}
+.wrap{max-width:950px;margin:auto}
+.panel{
+  background:#0d7138;
+  border-radius:20px;
+  padding:18px;
+  margin:12px 0;
+  box-shadow:0 8px 24px #0003
+}
+input,button{
+  font-size:16px;
+  padding:12px;
+  border-radius:10px;
+  border:0;
+  margin:5px
+}
+button{font-weight:700;cursor:pointer}
+.players{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px
+}
+.p{
+  background:#0003;
+  padding:10px;
+  border-radius:10px
+}
+.active{outline:3px solid #ffd84a}
+.cards{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:8px
+}
+.card{
+  background:white;
+  color:#111;
+  min-width:58px
+}
+.red{color:#c62828}
+.muted{opacity:.8}
+.hide{display:none}
+.trick{min-height:70px}
+</style>
+</head>
+
+<body>
+
+<div class="wrap">
+
+<h1>Șeptică 3v3 Online</h1>
+
+<div id="lobby" class="panel">
+
+<input id="name" placeholder="Numele tău">
+
+<br>
+
+<button onclick="createRoom()">Creează cameră</button>
+
+<input id="code" placeholder="Cod cameră" inputmode="numeric">
+
+<button onclick="joinRoom()">Intră în cameră</button>
+
+<div id="err"></div>
+
+</div>
+
+<div id="game" class="hide">
+
+<div class="panel">
+
+<div>
+Cod cameră:
+<b id="roomCode"></b>
+</div>
+
+<div class="muted">
+Trimite codul celorlalți 5 jucători.
+</div>
+
+<button id="startBtn" class="hide" onclick="startGame()">
+Pornește jocul
+</button>
+
+</div>
+
+<div class="panel">
+
+<div>
+<b>Echipa A</b> J1/J3/J5 —
+<span id="scoreA">0</span> puncte
+
+&nbsp; | &nbsp;
+
+<b>Echipa B</b> J2/J4/J6 —
+<span id="scoreB">0</span> puncte
+</div>
+
+<p id="message"></p>
+
+<div id="players" class="players"></div>
+
+</div>
+
+<div class="panel">
+
+<h3>Masa</h3>
+
+<div id="trick" class="cards trick"></div>
+
+</div>
+
+<div class="panel">
+
+<h3>Cărțile mele</h3>
+
+<div id="hand" class="cards"></div>
+
+</div>
+
+</div>
+
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+
+const socket = io()
+
+let mySeat = null
+let roomCode = null
+let state = null
+let hand = []
+
+function e(id){
+  return document.getElementById(id)
+}
+
+function createRoom(){
+
+  socket.emit(
+    'createRoom',
+    {name:e('name').value.trim()},
+    r=>{
+      if(!r.ok) return err(r.error)
+      enter(r.code,r.seat)
+    }
+  )
+
+}
+
+function joinRoom(){
+
+  socket.emit(
+    'joinRoom',
+    {
+      code:e('code').value.trim(),
+      name:e('name').value.trim()
+    },
+    r=>{
+      if(!r.ok) return err(r.error)
+      enter(r.code,r.seat)
+    }
+  )
+
+}
+
+function enter(code,seat){
+
+  roomCode = code
+  mySeat = seat
+
+  e('lobby').classList.add('hide')
+  e('game').classList.remove('hide')
+
+  e('roomCode').textContent = code
+
+}
+
+function err(m){
+  e('err').textContent = m
+}
+
+function startGame(){
+
+  socket.emit(
+    'startGame',
+    {code:roomCode},
+    r=>{
+      if(!r.ok) alert(r.error)
+    }
+  )
+
+}
+
+function play(i){
+
+  socket.emit(
+    'playCard',
+    {
+      code:roomCode,
+      index:i
+    },
+    r=>{
+      if(!r.ok) alert(r.error)
+    }
+  )
+
+}
+
+function red(c){
+  return c.suit==='♥' || c.suit==='♦'
+}
+
+socket.on('state',s=>{
+  state=s
+  render()
+})
+
+socket.on('hand',h=>{
+  hand=h
+  render()
+})
+
+function render(){
+
+  if(!state) return
+
+  e('scoreA').textContent=state.scoreA
+  e('scoreB').textContent=state.scoreB
+
+  e('message').textContent=state.message || ''
+
+  e('startBtn').classList.toggle(
+    'hide',
+    socket.id!==state.hostId ||
+    state.started ||
+    state.players.length!==6
+  )
+
+  const ps=e('players')
+
+  ps.innerHTML=''
+
+  state.players.forEach((p,i)=>{
+
+    const d=document.createElement('div')
+
+    d.className=
+      'p'+
+      (state.turn===i && state.started ? ' active':'')
+
+    d.innerHTML=
+      `J${i+1} — ${p.name}<br>
+      Echipa ${p.team}<br>
+      ${state.handCounts[i]??0} cărți
+      ${!p.connected?' — offline':''}`
+
+    ps.appendChild(d)
+
+  })
+
+  const tr=e('trick')
+
+  tr.innerHTML=''
+
+  state.trick.forEach(x=>{
+
+    const b=document.createElement('button')
+
+    b.disabled=true
+
+    b.className=
+      'card '+
+      (red(x.card)?'red':'')
+
+    b.textContent=
+      `J${x.player+1}: ${x.card.rank}${x.card.suit}`
+
+    tr.appendChild(b)
+
+  })
+
+  const h=e('hand')
+
+  h.innerHTML=''
+
+  hand.forEach((c,i)=>{
+
+    const b=document.createElement('button')
+
+    b.className=
+      'card '+
+      (red(c)?'red':'')
+
+    b.textContent=
+      c.rank+c.suit
+
+    b.disabled=
+      !state.started ||
+      state.turn!==mySeat
+
+    b.onclick=()=>play(i)
+
+    h.appendChild(b)
+
+  })
+
+}
+
+</script>
+
+</body>
+</html>
