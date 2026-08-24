@@ -42,11 +42,17 @@ input{
   font-family:inherit;
 }
 
-/* LOBBY */
+button{
+  cursor:pointer;
+}
+
+/* =========================
+   LOBBY
+========================= */
 
 #lobby{
-  width:min(92%,430px);
-  margin:60px auto;
+  width:min(92%,440px);
+  margin:45px auto;
   padding:25px;
   background:#07110ff2;
   border-radius:22px;
@@ -62,6 +68,34 @@ input{
   background:#111c18;
   color:white;
   font-size:16px;
+}
+
+.teamChoice{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin:10px 0;
+}
+
+.teamChoice button{
+  padding:13px;
+  border-radius:10px;
+  border:2px solid transparent;
+  color:white;
+  font-weight:bold;
+}
+
+.choose1{
+  background:#286c24;
+}
+
+.choose2{
+  background:#174b91;
+}
+
+.teamChoice button.selected{
+  border-color:#ffd642;
+  box-shadow:0 0 12px #ffd64288;
 }
 
 .mainButton{
@@ -84,7 +118,9 @@ input{
   color:#ff8888;
 }
 
-/* GAME */
+/* =========================
+   TOP
+========================= */
 
 #game{
   padding:10px;
@@ -100,7 +136,7 @@ input{
   max-width:1450px;
   margin:auto;
   display:grid;
-  grid-template-columns:180px 1fr 120px;
+  grid-template-columns:170px 1fr 90px;
   gap:8px;
 }
 
@@ -111,7 +147,7 @@ input{
 #roomCode{
   display:block;
   color:#ffd642;
-  font-size:25px;
+  font-size:24px;
   font-weight:bold;
 }
 
@@ -119,7 +155,7 @@ input{
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:18px;
+  gap:15px;
 }
 
 .scoreNumber{
@@ -135,11 +171,11 @@ input{
   color:#65a4ff;
 }
 
-.cardPointsBar{
+.cardPoints{
   text-align:center;
-  margin-top:5px;
-  color:#ddd;
   font-size:13px;
+  color:#ddd;
+  padding-bottom:5px;
 }
 
 .host{
@@ -150,15 +186,17 @@ input{
   font-weight:bold;
 }
 
+/* =========================
+   GAME LAYOUT
+========================= */
+
 .layout{
   max-width:1450px;
   margin:10px auto;
   display:grid;
-  grid-template-columns:1fr 260px;
+  grid-template-columns:1fr 280px;
   gap:10px;
 }
-
-/* TABLE */
 
 .tableZone{
   position:relative;
@@ -189,6 +227,10 @@ input{
     inset 0 0 50px #0008,
     0 25px 50px #000b;
 }
+
+/* =========================
+   PLAYERS
+========================= */
 
 .player{
   position:absolute;
@@ -233,6 +275,15 @@ input{
   background:#17478d;
 }
 
+.kick{
+  margin-top:4px;
+  padding:5px;
+  border:0;
+  border-radius:6px;
+  background:#ad2828;
+  color:white;
+}
+
 .p0{left:5%;top:15%}
 .p1{left:43%;top:-10%}
 .p2{right:5%;top:15%}
@@ -240,30 +291,25 @@ input{
 .p4{left:43%;bottom:-11%}
 .p5{left:4%;bottom:3%}
 
-/* CARDS ON TABLE */
+/* =========================
+   CARDS
+========================= */
 
 .centerCards{
   position:absolute;
   left:50%;
   top:49%;
+  transform:translate(-50%,-50%);
 
-  transform:
-    translate(-50%,-50%);
-
-  width:380px;
-
+  width:390px;
   min-height:180px;
 
   display:flex;
   flex-wrap:wrap;
-
   justify-content:center;
   align-content:center;
-
-  gap:6px;
+  gap:7px;
 }
-
-/* CARDS */
 
 .card{
   position:relative;
@@ -280,8 +326,7 @@ input{
 
   border:1px solid #d2c7b1;
 
-  box-shadow:
-    0 5px 12px #0008;
+  box-shadow:0 5px 12px #0008;
 
   user-select:none;
 }
@@ -294,25 +339,17 @@ input{
   position:absolute;
   top:5px;
   left:7px;
-
-  font-family:
-    Georgia,
-    serif;
-
+  font-family:Georgia,serif;
   font-size:22px;
-
   font-weight:bold;
 }
 
 .cardCenter{
   position:absolute;
   inset:0;
-
   display:flex;
-
   align-items:center;
   justify-content:center;
-
   font-size:48px;
 }
 
@@ -320,29 +357,18 @@ input{
   position:absolute;
   right:7px;
   bottom:5px;
-
-  transform:
-    rotate(180deg);
-
-  font-family:
-    Georgia,
-    serif;
-
+  transform:rotate(180deg);
+  font-family:Georgia,serif;
   font-size:21px;
-
   font-weight:bold;
 }
 
-/*
-  CĂRȚILE DE PE MASĂ
-  sunt mai mici și
-  nu se suprapun.
-*/
+/* cărțile mesei sunt mai mici */
 
 .centerCards .card{
-  width:58px;
-  height:86px;
-  flex:0 0 58px;
+  width:57px;
+  height:84px;
+  flex-basis:57px;
 }
 
 .centerCards .cardTop{
@@ -350,12 +376,16 @@ input{
 }
 
 .centerCards .cardCenter{
-  font-size:31px;
+  font-size:30px;
 }
 
 .centerCards .cardBottom{
   font-size:14px;
 }
+
+/* =========================
+   HAND
+========================= */
 
 .handPanel{
   padding:10px;
@@ -385,7 +415,9 @@ input{
   font-weight:bold;
 }
 
-/* CONTROLS */
+/* =========================
+   BUTTONS
+========================= */
 
 .controls{
   display:flex;
@@ -419,42 +451,62 @@ input{
   background:#b93b3b;
 }
 
-.kick{
-  margin-top:4px;
-  padding:5px;
-  border:0;
-  border-radius:6px;
-  color:white;
-  background:#ad2828;
+.change1{
+  background:#276f1c;
 }
 
-/* RESULT */
+.change2{
+  background:#17478d;
+}
 
-.resultBox{
-  margin:8px;
+.result{
   padding:8px;
-  border-radius:9px;
-  background:#ffffff0d;
   color:#ffd642;
   font-weight:bold;
-  text-align:center;
 }
 
-/* CHAT */
+/* =========================
+   RIGHT
+========================= */
 
 .side{
   padding:10px;
   min-width:0;
 }
 
-.chatTitle{
-  font-size:18px;
-  font-weight:bold;
+.tabs{
+  display:flex;
+  gap:4px;
   margin-bottom:8px;
 }
 
+.tab{
+  flex:1;
+  padding:9px 5px;
+  border:0;
+  border-radius:8px;
+  background:#ffffff12;
+  color:white;
+}
+
+.tab.active{
+  background:#3577c7;
+}
+
+.tabPage{
+  display:none;
+}
+
+.tabPage.active{
+  display:block;
+}
+
+/* =========================
+   CHAT
+========================= */
+
 #chatMessages{
-  height:280px;
+  height:260px;
   overflow-y:auto;
   background:#02070680;
   border-radius:10px;
@@ -463,62 +515,77 @@ input{
 
 .chatMessage{
   margin:5px 0;
-  padding:6px 8px;
+  padding:6px;
   background:#ffffff0e;
   border-radius:7px;
   word-break:break-word;
 }
 
 .chatName{
-  font-weight:bold;
   color:#ffd642;
+  font-weight:bold;
 }
 
 .chatForm{
-  margin-top:8px;
   display:flex;
   gap:5px;
+  margin-top:7px;
 }
 
 #chatInput{
   min-width:0;
   flex:1;
   padding:10px;
-
-  border:
-    1px solid #ffffff22;
-
-  border-radius:9px;
-
+  border:1px solid #ffffff22;
+  border-radius:8px;
   background:#111b18;
-
   color:white;
-
   font-size:16px;
 }
 
 .send{
   border:0;
-  border-radius:9px;
-  padding:10px;
+  border-radius:8px;
   background:#3278cf;
   color:white;
+  padding:8px;
+}
+
+/* =========================
+   HISTORY
+========================= */
+
+#history{
+  max-height:360px;
+  overflow-y:auto;
+}
+
+.historyItem{
+  margin-bottom:8px;
+  padding:8px;
+  border-radius:9px;
+  background:#ffffff0d;
+}
+
+.historyTitle{
+  color:#ffd642;
   font-weight:bold;
 }
 
-.info{
-  margin-top:12px;
+.historyCards{
+  margin-top:5px;
   font-size:13px;
-  color:#bbb;
+  line-height:1.5;
 }
 
-/* MOBILE */
+/* =========================
+   MOBILE
+========================= */
 
 @media(max-width:850px){
 
   .top{
-    grid-template-columns:
-      95px 1fr 55px;
+    grid-template-columns:95px 1fr 55px;
   }
 
   .room{
@@ -538,8 +605,8 @@ input{
     font-size:25px;
   }
 
-  .cardPointsBar{
-    font-size:10px;
+  .cardPoints{
+    font-size:9px;
   }
 
   .host{
@@ -590,9 +657,9 @@ input{
   }
 
   .centerCards .card{
-    width:46px;
-    height:68px;
-    flex-basis:46px;
+    width:45px;
+    height:67px;
+    flex-basis:45px;
   }
 
   .centerCards .cardTop{
@@ -600,7 +667,7 @@ input{
   }
 
   .centerCards .cardCenter{
-    font-size:25px;
+    font-size:24px;
   }
 
   .centerCards .cardBottom{
@@ -633,9 +700,6 @@ input{
     margin-top:10px;
   }
 
-  #chatMessages{
-    height:180px;
-  }
 }
 
 </style>
@@ -644,12 +708,14 @@ input{
 
 <body>
 
+<!-- LOBBY -->
+
 <div id="lobby">
 
 <h1>🃏 Șeptică 3v3</h1>
 
 <p>
-6 jucători • Echipa 1 vs Echipa 2
+Alege echipa înainte să intri.
 </p>
 
 <input
@@ -657,6 +723,26 @@ input{
   maxlength="20"
   placeholder="Numele tău"
 >
+
+<div class="teamChoice">
+
+<button
+  id="chooseTeam1"
+  class="choose1"
+  onclick="chooseTeam(1)"
+>
+Echipa 1
+</button>
+
+<button
+  id="chooseTeam2"
+  class="choose2"
+  onclick="chooseTeam(2)"
+>
+Echipa 2
+</button>
+
+</div>
 
 <button
   class="mainButton"
@@ -684,6 +770,8 @@ Intră în cameră
 </div>
 
 
+<!-- GAME -->
+
 <div
   id="game"
   class="hidden"
@@ -692,23 +780,19 @@ Intră în cameră
 <div class="top">
 
 <div class="room panel">
-
-Cod cameră
-
+Cod
 <span id="roomCode">
 ------
 </span>
-
 </div>
-
 
 <div class="panel">
 
 <div class="score">
 
-<div class="team1">
+<span class="team1">
 ECHIPA 1
-</div>
+</span>
 
 <span
   id="matchScore1"
@@ -717,9 +801,9 @@ ECHIPA 1
 0
 </span>
 
-<div>
+<span>
 -
-</div>
+</span>
 
 <span
   id="matchScore2"
@@ -728,23 +812,28 @@ ECHIPA 1
 0
 </span>
 
-<div class="team2">
+<span class="team2">
 ECHIPA 2
-</div>
+</span>
 
 </div>
 
-<div class="cardPointsBar">
+<div class="cardPoints">
 
-Puncte cărți:
-<strong id="cardPoints1">0</strong>
+Puncte 10/A:
+<strong id="points1">
+0
+</strong>
+
 -
-<strong id="cardPoints2">0</strong>
+
+<strong id="points2">
+0
+</strong>
 
 </div>
 
 </div>
-
 
 <div
   id="host"
@@ -784,9 +873,8 @@ Așteptăm...
 
 <div
   id="lastResult"
-  class="resultBox hidden"
+  class="result hidden"
 ></div>
-
 
 <div
   id="decisionControls"
@@ -797,14 +885,36 @@ Așteptăm...
   class="action continue"
   onclick="continueRound()"
 >
-▶ Continuă runda
+▶ Continuă
 </button>
 
 <button
   class="action stop"
   onclick="stopRound()"
 >
-■ Oprește runda
+■ Oprește
+</button>
+
+</div>
+
+
+<div
+  id="teamControls"
+  class="controls"
+>
+
+<button
+  class="action change1"
+  onclick="changeTeam(1)"
+>
+Echipa 1
+</button>
+
+<button
+  class="action change2"
+  onclick="changeTeam(2)"
+>
+Echipa 2
 </button>
 
 </div>
@@ -817,7 +927,7 @@ Așteptăm...
   class="action bot hidden"
   onclick="fillWithBots()"
 >
-🤖 Test cu 5 boți
+🤖 Test boți
 </button>
 
 <button
@@ -825,11 +935,10 @@ Așteptăm...
   class="action start hidden"
   onclick="startGame()"
 >
-▶ Pornește partida
+▶ Pornește
 </button>
 
 </div>
-
 
 <div id="hand"></div>
 
@@ -840,9 +949,31 @@ Așteptăm...
 
 <div class="side panel">
 
-<div class="chatTitle">
-💬 Chat cameră
+<div class="tabs">
+
+<button
+  id="chatTab"
+  class="tab active"
+  onclick="showTab('chat')"
+>
+💬 Chat
+</button>
+
+<button
+  id="historyTab"
+  class="tab"
+  onclick="showTab('history')"
+>
+📜 Istoric
+</button>
+
 </div>
+
+
+<div
+  id="chatPage"
+  class="tabPage active"
+>
 
 <div id="chatMessages"></div>
 
@@ -855,7 +986,7 @@ Așteptăm...
   id="chatInput"
   maxlength="200"
   autocomplete="off"
-  placeholder="Scrie un mesaj..."
+  placeholder="Mesaj..."
 >
 
 <button
@@ -867,8 +998,33 @@ Trimite
 
 </form>
 
+</div>
 
-<div class="info">
+
+<div
+  id="historyPage"
+  class="tabPage"
+>
+
+<div id="history"></div>
+
+</div>
+
+
+<div
+  style="
+    margin-top:12px;
+    font-size:13px;
+    color:#bbb
+  "
+>
+
+<div>
+Runda:
+<strong id="roundNumber">
+1
+</strong>
+</div>
 
 <div>
 Prima carte:
@@ -881,13 +1037,6 @@ Prima carte:
 Tăieri:
 <strong id="cuts">
 7 și 8
-</strong>
-</div>
-
-<div>
-Cărți pe masă:
-<strong id="playedCount">
-0
 </strong>
 </div>
 
@@ -905,7 +1054,7 @@ E2
 </div>
 
 <div
-  id="statusMessage"
+  id="status"
   style="
     margin-top:8px;
     color:#83ef68
@@ -940,6 +1089,9 @@ let state =
 let hand =
   [];
 
+let chosenTeam =
+  null;
+
 const avatars = [
   "/player1.png",
   "/player2.png",
@@ -949,29 +1101,86 @@ const avatars = [
   "/player6.png"
 ];
 
-function e(id) {
+function e(id){
   return document
     .getElementById(id);
+}
+
+/* =========================
+   TEAM CHOICE
+========================= */
+
+function chooseTeam(team){
+
+  chosenTeam =
+    team;
+
+  e("chooseTeam1")
+    .classList
+    .toggle(
+      "selected",
+      team === 1
+    );
+
+  e("chooseTeam2")
+    .classList
+    .toggle(
+      "selected",
+      team === 2
+    );
+}
+
+function changeTeam(team){
+
+  socket.emit(
+    "changeTeam",
+    {
+      code:
+        roomCode,
+
+      team
+    },
+    response=>{
+
+      if(
+        !response.ok
+      ){
+        alert(
+          response.error
+        );
+      }
+    }
+  );
 }
 
 /* =========================
    ROOM
 ========================= */
 
-function createRoom() {
+function createRoom(){
+
+  if(!chosenTeam){
+    return showError(
+      "Alege Echipa 1 sau Echipa 2."
+    );
+  }
+
   socket.emit(
     "createRoom",
     {
       name:
         e("name")
           .value
-          .trim()
-    },
-    response => {
+          .trim(),
 
-      if (
+      team:
+        chosenTeam
+    },
+    response=>{
+
+      if(
         !response.ok
-      ) {
+      ){
         return showError(
           response.error
         );
@@ -985,7 +1194,14 @@ function createRoom() {
   );
 }
 
-function joinRoom() {
+function joinRoom(){
+
+  if(!chosenTeam){
+    return showError(
+      "Alege Echipa 1 sau Echipa 2."
+    );
+  }
+
   socket.emit(
     "joinRoom",
     {
@@ -997,13 +1213,16 @@ function joinRoom() {
       name:
         e("name")
           .value
-          .trim()
-    },
-    response => {
+          .trim(),
 
-      if (
+      team:
+        chosenTeam
+    },
+    response=>{
+
+      if(
         !response.ok
-      ) {
+      ){
         return showError(
           response.error
         );
@@ -1020,7 +1239,8 @@ function joinRoom() {
 function enter(
   code,
   seat
-) {
+){
+
   roomCode =
     code;
 
@@ -1029,11 +1249,15 @@ function enter(
 
   e("lobby")
     .classList
-    .add("hidden");
+    .add(
+      "hidden"
+    );
 
   e("game")
     .classList
-    .remove("hidden");
+    .remove(
+      "hidden"
+    );
 
   e("roomCode")
     .textContent =
@@ -1042,7 +1266,8 @@ function enter(
 
 socket.on(
   "seat",
-  seat => {
+  seat=>{
+
     mySeat =
       seat;
 
@@ -1051,21 +1276,22 @@ socket.on(
 );
 
 /* =========================
-   BOTS
+   GAME
 ========================= */
 
-function fillWithBots() {
+function fillWithBots(){
+
   socket.emit(
     "fillWithBots",
     {
       code:
         roomCode
     },
-    response => {
+    response=>{
 
-      if (
+      if(
         !response.ok
-      ) {
+      ){
         alert(
           response.error
         );
@@ -1074,22 +1300,19 @@ function fillWithBots() {
   );
 }
 
-/* =========================
-   START
-========================= */
+function startGame(){
 
-function startGame() {
   socket.emit(
     "startGame",
     {
       code:
         roomCode
     },
-    response => {
+    response=>{
 
-      if (
+      if(
         !response.ok
-      ) {
+      ){
         alert(
           response.error
         );
@@ -1098,22 +1321,19 @@ function startGame() {
   );
 }
 
-/* =========================
-   CONTINUE / STOP
-========================= */
+function continueRound(){
 
-function continueRound() {
   socket.emit(
     "continueRound",
     {
       code:
         roomCode
     },
-    response => {
+    response=>{
 
-      if (
+      if(
         !response.ok
-      ) {
+      ){
         alert(
           response.error
         );
@@ -1122,18 +1342,19 @@ function continueRound() {
   );
 }
 
-function stopRound() {
+function stopRound(){
+
   socket.emit(
     "stopRound",
     {
       code:
         roomCode
     },
-    response => {
+    response=>{
 
-      if (
+      if(
         !response.ok
-      ) {
+      ){
         alert(
           response.error
         );
@@ -1142,13 +1363,8 @@ function stopRound() {
   );
 }
 
-/* =========================
-   PLAY CARD
-========================= */
+function playCard(index){
 
-function playCard(
-  index
-) {
   socket.emit(
     "playCard",
     {
@@ -1157,11 +1373,11 @@ function playCard(
 
       index
     },
-    response => {
+    response=>{
 
-      if (
+      if(
         !response.ok
-      ) {
+      ){
         alert(
           response.error
         );
@@ -1174,23 +1390,22 @@ function playCard(
    KICK
 ========================= */
 
-function kickPlayer(
-  seat
-) {
+function kickPlayer(seat){
+
   const player =
     state.players[
       seat
     ];
 
-  if (!player) {
+  if(!player){
     return;
   }
 
-  if (
+  if(
     !confirm(
       `Dai afară pe ${player.name}?`
     )
-  ) {
+  ){
     return;
   }
 
@@ -1202,11 +1417,11 @@ function kickPlayer(
 
       seat
     },
-    response => {
+    response=>{
 
-      if (
+      if(
         !response.ok
-      ) {
+      ){
         alert(
           response.error
         );
@@ -1217,7 +1432,8 @@ function kickPlayer(
 
 socket.on(
   "kicked",
-  () => {
+  ()=>{
+
     alert(
       "Host-ul te-a dat afară."
     );
@@ -1233,7 +1449,7 @@ socket.on(
 e("chatForm")
   .addEventListener(
     "submit",
-    event => {
+    event=>{
 
       event.preventDefault();
 
@@ -1242,7 +1458,7 @@ e("chatForm")
           .value
           .trim();
 
-      if (!text) {
+      if(!text){
         return;
       }
 
@@ -1254,12 +1470,12 @@ e("chatForm")
 
           text
         },
-        response => {
+        response=>{
 
-          if (
+          if(
             response &&
             !response.ok
-          ) {
+          ){
             alert(
               response.error
             );
@@ -1277,7 +1493,7 @@ e("chatForm")
 
 socket.on(
   "chatMessage",
-  message => {
+  message=>{
 
     const box =
       document
@@ -1303,9 +1519,8 @@ socket.on(
   }
 );
 
-function escapeHTML(
-  value
-) {
+function escapeHTML(value){
+
   const div =
     document
       .createElement(
@@ -1319,12 +1534,52 @@ function escapeHTML(
 }
 
 /* =========================
+   TABS
+========================= */
+
+function showTab(tab){
+
+  const chat =
+    tab ===
+    "chat";
+
+  e("chatPage")
+    .classList
+    .toggle(
+      "active",
+      chat
+    );
+
+  e("historyPage")
+    .classList
+    .toggle(
+      "active",
+      !chat
+    );
+
+  e("chatTab")
+    .classList
+    .toggle(
+      "active",
+      chat
+    );
+
+  e("historyTab")
+    .classList
+    .toggle(
+      "active",
+      !chat
+    );
+}
+
+/* =========================
    STATE
 ========================= */
 
 socket.on(
   "state",
-  newState => {
+  newState=>{
+
     state =
       newState;
 
@@ -1334,7 +1589,8 @@ socket.on(
 
 socket.on(
   "hand",
-  newHand => {
+  newHand=>{
+
     hand =
       newHand;
 
@@ -1343,19 +1599,19 @@ socket.on(
 );
 
 /* =========================
-   CARD
+   CARDS
 ========================= */
 
-function red(card) {
-  return (
+function red(card){
+
+  return(
     card.suit === "♥" ||
     card.suit === "♦"
   );
 }
 
-function cardHTML(
-  card
-) {
+function cardHTML(card){
+
   return `
 
     <div class="cardTop">
@@ -1376,15 +1632,107 @@ function cardHTML(
 }
 
 /* =========================
-   RENDER
+   HISTORY
 ========================= */
 
-function render() {
-  if (!state) {
+function renderHistory(){
+
+  const box =
+    e("history");
+
+  box.innerHTML =
+    "";
+
+  const history =
+    state.history ||
+    [];
+
+  if(
+    history.length === 0
+  ){
+    box.innerHTML =
+      "<div>Nu există încă runde terminate.</div>";
+
     return;
   }
 
-  /* SCOR PARTIDE */
+  [...history]
+    .reverse()
+    .forEach(
+      item=>{
+
+        const row =
+          document
+            .createElement(
+              "div"
+            );
+
+        row.className =
+          "historyItem";
+
+        const cards =
+          item.cards
+            .map(
+              card=>
+                `${escapeHTML(card.name)}: ${card.rank}${card.suit}${card.cut ? " ✂️" : ""}`
+            )
+            .join("<br>");
+
+        row.innerHTML = `
+
+          <div class="historyTitle">
+
+            Runda ${item.round}
+
+          </div>
+
+          <div>
+
+            A început:
+            ${escapeHTML(item.openerName)}
+            (${item.openingRank})
+
+          </div>
+
+          <div>
+
+            A luat:
+            ${escapeHTML(item.winnerName)}
+            — Echipa ${item.winnerTeam}
+
+          </div>
+
+          <div>
+
+            Puncte:
+            ${item.points}
+
+          </div>
+
+          <div class="historyCards">
+
+            ${cards}
+
+          </div>
+
+        `;
+
+        box.appendChild(
+          row
+        );
+      }
+    );
+}
+
+/* =========================
+   RENDER
+========================= */
+
+function render(){
+
+  if(!state){
+    return;
+  }
 
   e("matchScore1")
     .textContent =
@@ -1396,14 +1744,12 @@ function render() {
     state.matchScore2 ??
     0;
 
-  /* PUNCTE CĂRȚI */
-
-  e("cardPoints1")
+  e("points1")
     .textContent =
     state.cardPoints1 ??
     0;
 
-  e("cardPoints2")
+  e("points2")
     .textContent =
     state.cardPoints2 ??
     0;
@@ -1418,7 +1764,12 @@ function render() {
     state.piles2 ??
     0;
 
-  e("statusMessage")
+  e("roundNumber")
+    .textContent =
+    state.roundNumber ??
+    1;
+
+  e("status")
     .textContent =
     state.message ||
     "";
@@ -1431,14 +1782,30 @@ function render() {
     .textContent =
     host
       ? "👑 Tu"
-      : "👑 Host";
+      : "👑";
 
   const count =
     state.players
       .filter(Boolean)
       .length;
 
-  /* BUTON BOȚI */
+  const team1Count =
+    state.players
+      .filter(
+        p =>
+          p &&
+          p.team === 1
+      )
+      .length;
+
+  const team2Count =
+    state.players
+      .filter(
+        p =>
+          p &&
+          p.team === 2
+      )
+      .length;
 
   e("botButton")
     .classList
@@ -1451,12 +1818,6 @@ function render() {
       )
     );
 
-  /*
-    START apare și după
-    terminarea partidei,
-    ca să pornești alta.
-  */
-
   e("startButton")
     .classList
     .toggle(
@@ -1464,7 +1825,9 @@ function render() {
       !(
         host &&
         !state.started &&
-        count === 6
+        count === 6 &&
+        team1Count === 3 &&
+        team2Count === 3
       )
     );
 
@@ -1472,13 +1835,20 @@ function render() {
     .textContent =
     state.gameFinished
       ? "▶ Partidă nouă"
-      : "▶ Pornește partida";
+      : "▶ Pornește";
+
+  e("teamControls")
+    .classList
+    .toggle(
+      "hidden",
+      state.started
+    );
 
   /* RESULT */
 
-  if (
+  if(
     state.lastResult
-  ) {
+  ){
     e("lastResult")
       .classList
       .remove(
@@ -1488,7 +1858,7 @@ function render() {
     e("lastResult")
       .textContent =
       state.lastResult;
-  } else {
+  }else{
     e("lastResult")
       .classList
       .add(
@@ -1498,24 +1868,23 @@ function render() {
 
   /* DECISION */
 
-  const decision =
-    state.started &&
-    state.awaitingDecision &&
-    state.opener ===
-      mySeat;
-
   e("decisionControls")
     .classList
     .toggle(
       "hidden",
-      !decision
+      !(
+        state.started &&
+        state.awaitingDecision &&
+        state.opener ===
+          mySeat
+      )
     );
 
   /* TURN */
 
-  if (
+  if(
     state.awaitingDecision
-  ) {
+  ){
     const opener =
       state.players[
         state.opener
@@ -1525,14 +1894,14 @@ function render() {
       .textContent =
       state.opener ===
       mySeat
-        ? "Alegi dacă runda continuă."
-        : `${opener?.name || "Jucătorul"} decide dacă continuă.`;
+        ? "Alegi: Continui sau oprești runda?"
+        : `${opener?.name || "Jucătorul"} decide.`;
   }
 
-  else if (
+  else if(
     state.started
-  ) {
-    const player =
+  ){
+    const current =
       state.players[
         state.turn
       ];
@@ -1546,21 +1915,13 @@ function render() {
               ? `🟢 Alege ${state.openingRank}, 7 sau 8`
               : "🟢 Rândul tău"
           )
-        : `Rândul lui ${player?.name || "jucător"}`;
+        : `Rândul lui ${current?.name || "jucător"}`;
   }
 
-  else if (
-    state.gameFinished
-  ) {
+  else{
     e("turnMessage")
       .textContent =
-      `Partida s-a terminat ${state.cardPoints1}-${state.cardPoints2}`;
-  }
-
-  else {
-    e("turnMessage")
-      .textContent =
-      `${count}/6 jucători la masă`;
+      `Echipa 1: ${team1Count}/3 • Echipa 2: ${team2Count}/3`;
   }
 
   /* PLAYERS */
@@ -1571,11 +1932,11 @@ function render() {
   players.innerHTML =
     "";
 
-  for (
+  for(
     let index = 0;
     index < 6;
     index++
-  ) {
+  ){
     const player =
       state.players[
         index
@@ -1590,7 +1951,8 @@ function render() {
     box.className =
       `player p${index}`;
 
-    if (!player) {
+    if(!player){
+
       box.innerHTML = `
 
         <div
@@ -1612,6 +1974,7 @@ function render() {
         <div class="playerName">
           Loc liber
         </div>
+
       `;
 
       players.appendChild(
@@ -1621,11 +1984,11 @@ function render() {
       continue;
     }
 
-    if (
+    if(
       state.started &&
       state.turn ===
         index
-    ) {
+    ){
       box.classList.add(
         "active"
       );
@@ -1634,12 +1997,12 @@ function render() {
     let kick =
       "";
 
-    if (
+    if(
       host &&
       !state.started &&
       index !==
         mySeat
-    ) {
+    ){
       kick = `
 
         <button
@@ -1648,6 +2011,7 @@ function render() {
         >
           ✕ Dă afară
         </button>
+
       `;
     }
 
@@ -1693,6 +2057,7 @@ function render() {
       </div>
 
       ${kick}
+
     `;
 
     players.appendChild(
@@ -1704,7 +2069,6 @@ function render() {
 
   const table =
     state.table ||
-    state.trick ||
     [];
 
   const center =
@@ -1714,43 +2078,41 @@ function render() {
     "";
 
   table.forEach(
-    play => {
+    play=>{
 
-      const c =
+      const card =
         document
           .createElement(
             "div"
           );
 
-      c.className =
+      card.className =
         "card";
 
-      if (
-        red(play.card)
-      ) {
-        c.classList.add(
+      if(
+        red(
+          play.card
+        )
+      ){
+        card.classList.add(
           "red"
         );
       }
 
-      c.innerHTML =
+      card.innerHTML =
         cardHTML(
           play.card
         );
 
       center.appendChild(
-        c
+        card
       );
     }
   );
 
-  e("playedCount")
-    .textContent =
-    table.length;
-
-  if (
+  if(
     state.openingRank
-  ) {
+  ){
     e("firstCard")
       .textContent =
       state.openingRank;
@@ -1758,7 +2120,7 @@ function render() {
     e("cuts")
       .textContent =
       `${state.openingRank}, 7 sau 8`;
-  } else {
+  }else{
     e("firstCard")
       .textContent =
       "-";
@@ -1780,21 +2142,21 @@ function render() {
     (
       card,
       index
-    ) => {
+    )=>{
 
-      const c =
+      const element =
         document
           .createElement(
             "div"
           );
 
-      c.className =
+      element.className =
         "card";
 
-      if (
+      if(
         red(card)
-      ) {
-        c.classList.add(
+      ){
+        element.classList.add(
           "red"
         );
       }
@@ -1805,11 +2167,11 @@ function render() {
           mySeat &&
         !state.awaitingDecision;
 
-      if (
+      if(
         state.continuationMode &&
         state.turn ===
           mySeat
-      ) {
+      ){
         canPlay =
           card.rank === "7" ||
           card.rank === "8" ||
@@ -1817,37 +2179,38 @@ function render() {
             state.openingRank;
       }
 
-      if (canPlay) {
-        c.classList.add(
+      if(canPlay){
+        element.classList.add(
           "canPlay"
         );
 
-        c.onclick =
+        element.onclick =
           () =>
             playCard(
               index
             );
-      } else {
-        c.classList.add(
+      }else{
+        element.classList.add(
           "disabled"
         );
       }
 
-      c.innerHTML =
+      element.innerHTML =
         cardHTML(
           card
         );
 
       handBox.appendChild(
-        c
+        element
       );
     }
   );
+
+  renderHistory();
 }
 
-function showError(
-  text
-) {
+function showError(text){
+
   e("error")
     .textContent =
     text;
@@ -1856,4 +2219,5 @@ function showError(
 </script>
 
 </body>
+
 </html>
