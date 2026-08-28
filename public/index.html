@@ -181,6 +181,41 @@ button{
   color:#ffd642;
 }
 
+/* TIMER */
+
+.turnTimer{
+  text-align:center;
+  margin-top:6px;
+  font-size:15px;
+  font-weight:bold;
+  color:#ffd642;
+}
+
+#turnTimer{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:42px;
+  padding:4px 8px;
+  border-radius:8px;
+  background:#0007;
+  font-size:18px;
+}
+
+#turnTimer.danger{
+  color:#ff5656;
+  animation:timerPulse .6s infinite alternate;
+}
+
+@keyframes timerPulse{
+  from{
+    transform:scale(1);
+  }
+  to{
+    transform:scale(1.12);
+  }
+}
+
 /* LAYOUT */
 
 .layout{
@@ -250,6 +285,19 @@ button{
     drop-shadow(0 0 22px #36e6ff);
 }
 
+.player.dealer .avatar{
+  filter:
+    drop-shadow(0 0 8px #ffd642)
+    drop-shadow(0 0 20px #ffb300);
+}
+
+.player.active.dealer .avatar{
+  filter:
+    drop-shadow(0 0 8px #aaff30)
+    drop-shadow(0 0 18px #86ff00)
+    drop-shadow(0 0 20px #ffd642);
+}
+
 .playerName{
   display:inline-block;
   background:#111d;
@@ -281,6 +329,17 @@ button{
   border-radius:8px;
   background:#111c;
   font-size:13px;
+}
+
+.dealerBadge{
+  display:inline-block;
+  margin:3px;
+  padding:3px 7px;
+  border-radius:8px;
+  background:#735800;
+  color:#ffe56b;
+  font-size:12px;
+  font-weight:bold;
 }
 
 .kick{
@@ -710,6 +769,14 @@ button{
     font-size:9px;
   }
 
+  .turnTimer{
+    font-size:11px;
+  }
+
+  #turnTimer{
+    font-size:15px;
+  }
+
   .layout{
     display:block;
   }
@@ -739,7 +806,8 @@ button{
   }
 
   .teamTag,
-  .voiceBadge{
+  .voiceBadge,
+  .dealerBadge{
     font-size:8px;
   }
 
@@ -805,8 +873,6 @@ button{
 
 <body>
 
-<!-- LOBBY -->
-
 <div id="lobby">
 
 <h1>🃏 Șeptică 3v3</h1>
@@ -866,8 +932,6 @@ Intră în cameră
 
 </div>
 
-<!-- GAME -->
-
 <div
   id="game"
   class="hidden"
@@ -922,6 +986,14 @@ Puncte 10/A:
 -
 <strong id="points2">0</strong>
 
+</div>
+
+<div
+  id="timerBox"
+  class="turnTimer hidden"
+>
+⏱️ Timp:
+<span id="turnTimer">20</span>s
 </div>
 
 </div>
@@ -1027,8 +1099,6 @@ Așteptăm...
 
 </div>
 
-<!-- MICROFON -->
-
 <div class="controls">
 
 <button
@@ -1064,21 +1134,10 @@ Folosește raportarea doar dacă adversarii spun ce cărți au sau coordonează 
 
 <select id="reportReason">
 
-<option>
-A spus ce cărți are
-</option>
-
-<option>
-I-a spus colegului ce să joace
-</option>
-
-<option>
-A coordonat jocul prin voce
-</option>
-
-<option>
-Altă trișare
-</option>
+<option>A spus ce cărți are</option>
+<option>I-a spus colegului ce să joace</option>
+<option>A coordonat jocul prin voce</option>
+<option>Altă trișare</option>
 
 </select>
 
@@ -1092,8 +1151,6 @@ Confirmă raportul
 </div>
 
 <div id="hand"></div>
-
-<!-- EMOJI -->
 
 <div class="emojiBar">
 
@@ -1111,8 +1168,6 @@ Confirmă raportul
 </div>
 
 </div>
-
-<!-- SIDE -->
 
 <div class="side panel">
 
@@ -1205,6 +1260,11 @@ E1 <strong id="piles1">0</strong>
 E2 <strong id="piles2">0</strong>
 </div>
 
+<div>
+🃏 Face cărțile:
+<strong id="dealerName">-</strong>
+</div>
+
 <div
   id="status"
   style="
@@ -1239,23 +1299,65 @@ let chosenTeam = null;
 let reportUsed = false;
 let lastGameId = null;
 
-/* =========================
-   VOICE
-========================= */
+/* TIMER */
+
+let timerInterval = null;
+
+function updateTurnTimer(){
+
+  if(
+    !state ||
+    !state.started ||
+    !state.turnDeadline
+  ){
+    e("timerBox").classList.add("hidden");
+    return;
+  }
+
+  e("timerBox").classList.remove("hidden");
+
+  const remaining =
+    Math.max(
+      0,
+      Math.ceil(
+        (
+          state.turnDeadline -
+          Date.now()
+        ) / 1000
+      )
+    );
+
+  e("turnTimer").textContent =
+    remaining;
+
+  e("turnTimer")
+    .classList
+    .toggle(
+      "danger",
+      remaining <= 5
+    );
+}
+
+timerInterval =
+  setInterval(
+    updateTurnTimer,
+    250
+  );
+
+/* VOICE */
 
 let localStream = null;
 let micEnabled = false;
 
-const peers =
-  new Map();
-
-const audioElements =
-  new Map();
+const peers = new Map();
+const audioElements = new Map();
 
 let audioContext = null;
 let analyser = null;
 let speakingLoop = null;
 let lastSpeaking = false;
+
+let voiceConnected = false;
 
 const rtcConfig = {
   iceServers: [
@@ -1265,10 +1367,6 @@ const rtcConfig = {
     }
   ]
 };
-
-/* =========================
-   AVATARS
-========================= */
 
 const avatars = [
   "/player1.png",
@@ -1280,13 +1378,10 @@ const avatars = [
 ];
 
 function e(id){
-  return document
-    .getElementById(id);
+  return document.getElementById(id);
 }
 
-/* =========================
-   TEAM
-========================= */
+/* TEAM */
 
 function chooseTeam(team){
 
@@ -1317,20 +1412,14 @@ function changeTeam(team){
     },
     response=>{
 
-      if(
-        !response.ok
-      ){
-        alert(
-          response.error
-        );
+      if(!response.ok){
+        alert(response.error);
       }
     }
   );
 }
 
-/* =========================
-   ROOM
-========================= */
+/* ROOM */
 
 function createRoom(){
 
@@ -1407,10 +1496,7 @@ function joinRoom(){
   );
 }
 
-function enter(
-  code,
-  seat
-){
+function enter(code,seat){
 
   roomCode = code;
   mySeat = seat;
@@ -1426,6 +1512,22 @@ function enter(
   e("roomCode")
     .textContent =
     code;
+
+  /*
+    IMPORTANT:
+    conectăm voice chat-ul automat.
+
+    Nu cerem microfon.
+    Astfel utilizatorul poate AUZI
+    chiar dacă microfonul este oprit.
+  */
+
+  setTimeout(
+    ()=>{
+      connectVoiceListener();
+    },
+    300
+  );
 }
 
 socket.on(
@@ -1438,24 +1540,19 @@ socket.on(
   }
 );
 
-/* =========================
-   GAME
-========================= */
+/* GAME */
 
 function fillWithBots(){
 
   socket.emit(
     "fillWithBots",
     {
-      code:
-        roomCode
+      code:roomCode
     },
     response=>{
 
       if(!response.ok){
-        alert(
-          response.error
-        );
+        alert(response.error);
       }
     }
   );
@@ -1466,15 +1563,12 @@ function startGame(){
   socket.emit(
     "startGame",
     {
-      code:
-        roomCode
+      code:roomCode
     },
     response=>{
 
       if(!response.ok){
-        alert(
-          response.error
-        );
+        alert(response.error);
       }
     }
   );
@@ -1485,15 +1579,12 @@ function continueRound(){
   socket.emit(
     "continueRound",
     {
-      code:
-        roomCode
+      code:roomCode
     },
     response=>{
 
       if(!response.ok){
-        alert(
-          response.error
-        );
+        alert(response.error);
       }
     }
   );
@@ -1504,15 +1595,12 @@ function stopRound(){
   socket.emit(
     "stopRound",
     {
-      code:
-        roomCode
+      code:roomCode
     },
     response=>{
 
       if(!response.ok){
-        alert(
-          response.error
-        );
+        alert(response.error);
       }
     }
   );
@@ -1523,40 +1611,31 @@ function playCard(index){
   socket.emit(
     "playCard",
     {
-      code:
-        roomCode,
-
+      code:roomCode,
       index
     },
     response=>{
 
       if(!response.ok){
-        alert(
-          response.error
-        );
+        alert(response.error);
       }
     }
   );
 }
 
-/* =========================
-   REPORT
-========================= */
+/* REPORT */
 
 function toggleReportBox(){
 
   e("reportBox")
     .classList
-    .toggle(
-      "hidden"
-    );
+    .toggle("hidden");
 }
 
 function submitCheatingReport(){
 
-  if(
-    reportUsed
-  ){
+  if(reportUsed){
+
     alert(
       "Ai raportat deja în această partidă."
     );
@@ -1565,36 +1644,28 @@ function submitCheatingReport(){
   }
 
   const reason =
-    e("reportReason")
-      .value;
+    e("reportReason").value;
 
   const confirmed =
     confirm(
       "Confirmi raportul de trișare? Folosește această funcție doar dacă echipa adversă trișează."
     );
 
-  if(
-    !confirmed
-  ){
+  if(!confirmed){
     return;
   }
 
   socket.emit(
     "reportCheating",
     {
-      code:
-        roomCode,
-
+      code:roomCode,
       reason
     },
     response=>{
 
-      if(
-        !response.ok
-      ){
-        alert(
-          response.error
-        );
+      if(!response.ok){
+
+        alert(response.error);
 
         return;
       }
@@ -1603,9 +1674,7 @@ function submitCheatingReport(){
 
       e("reportBox")
         .classList
-        .add(
-          "hidden"
-        );
+        .add("hidden");
 
       e("reportButton")
         .textContent =
@@ -1630,15 +1699,58 @@ socket.on(
   }
 );
 
-/* =========================
-   MICROPHONE
-========================= */
+/* =========================================
+   VOICE LISTENER
+
+   Acesta pornește automat.
+   NU cere acces la microfon.
+   ========================================= */
+
+function connectVoiceListener(){
+
+  if(
+    !roomCode ||
+    voiceConnected
+  ){
+    return;
+  }
+
+  voiceConnected = true;
+
+  socket.emit(
+    "voiceReady",
+    {
+      code:roomCode
+    },
+    async response=>{
+
+      if(
+        !response ||
+        !response.ok
+      ){
+        voiceConnected = false;
+        return;
+      }
+
+      for(
+        const peer
+        of response.peers
+      ){
+        await createPeer(
+          peer.socketId,
+          true
+        );
+      }
+    }
+  );
+}
+
+/* MICROPHONE */
 
 async function toggleMicrophone(){
 
-  if(
-    micEnabled
-  ){
+  if(micEnabled){
+
     stopMicrophone();
     return;
   }
@@ -1648,7 +1760,7 @@ async function toggleMicrophone(){
     localStream =
       await navigator.mediaDevices
         .getUserMedia({
-          audio: true
+          audio:true
         });
 
     micEnabled = true;
@@ -1659,37 +1771,12 @@ async function toggleMicrophone(){
 
     startSpeakingDetector();
 
-    socket.emit(
-      "voiceReady",
-      {
-        code:
-          roomCode
-      },
-      async response=>{
+    /*
+      Refacem conexiunile pentru
+      a adăuga pista microfonului.
+    */
 
-        if(
-          !response.ok
-        ){
-          alert(
-            response.error
-          );
-
-          stopMicrophone();
-
-          return;
-        }
-
-        for(
-          const peer
-          of response.peers
-        ){
-          await createPeer(
-            peer.socketId,
-            true
-          );
-        }
-      }
-    );
+    rebuildVoiceConnections();
 
   }catch(error){
 
@@ -1703,24 +1790,44 @@ function stopMicrophone(){
 
   micEnabled = false;
 
-  if(
-    localStream
-  ){
+  if(localStream){
+
     localStream
       .getTracks()
       .forEach(
-        track=>
-          track.stop()
+        track=>track.stop()
       );
   }
 
   localStream = null;
 
+  stopSpeakingDetector();
+
+  e("micButton")
+    .textContent =
+    "🎤 Pornește microfonul";
+
+  /*
+    IMPORTANT:
+    NU ieșim din voice chat.
+
+    Refacem conexiunile fără
+    microfon, deci continuăm
+    să AUZIM ceilalți.
+  */
+
+  rebuildVoiceConnections();
+}
+
+function closeAllPeers(){
+
   for(
     const pc
     of peers.values()
   ){
-    pc.close();
+    try{
+      pc.close();
+    }catch(error){}
   }
 
   peers.clear();
@@ -1733,19 +1840,19 @@ function stopMicrophone(){
   }
 
   audioElements.clear();
+}
 
-  stopSpeakingDetector();
+function rebuildVoiceConnections(){
 
-  e("micButton")
-    .textContent =
-    "🎤 Pornește microfonul";
+  closeAllPeers();
 
-  socket.emit(
-    "voiceStopped",
-    {
-      code:
-        roomCode
-    }
+  voiceConnected = false;
+
+  setTimeout(
+    ()=>{
+      connectVoiceListener();
+    },
+    150
   );
 }
 
@@ -1755,13 +1862,9 @@ async function createPeer(
 ){
 
   if(
-    peers.has(
-      peerId
-    )
+    peers.has(peerId)
   ){
-    return peers.get(
-      peerId
-    );
+    return peers.get(peerId);
   }
 
   const pc =
@@ -1774,9 +1877,17 @@ async function createPeer(
     pc
   );
 
-  if(
-    localStream
-  ){
+  /*
+    Dacă microfonul este pornit,
+    trimitem audio.
+
+    Dacă este oprit,
+    conexiunea există în continuare
+    și putem primi audio.
+  */
+
+  if(localStream){
+
     for(
       const track
       of localStream.getTracks()
@@ -1786,22 +1897,36 @@ async function createPeer(
         localStream
       );
     }
+
+  }else{
+
+    /*
+      Receive-only audio.
+    */
+
+    try{
+
+      pc.addTransceiver(
+        "audio",
+        {
+          direction:
+            "recvonly"
+        }
+      );
+
+    }catch(error){}
   }
 
   pc.onicecandidate =
     event=>{
 
-      if(
-        event.candidate
-      ){
+      if(event.candidate){
+
         socket.emit(
           "webrtcSignal",
           {
-            code:
-              roomCode,
-
-            target:
-              peerId,
+            code:roomCode,
+            target:peerId,
 
             data:{
               candidate:
@@ -1820,19 +1945,15 @@ async function createPeer(
           peerId
         );
 
-      if(
-        !audio
-      ){
+      if(!audio){
+
         audio =
           document.createElement(
             "audio"
           );
 
-        audio.autoplay =
-          true;
-
-        audio.playsInline =
-          true;
+        audio.autoplay = true;
+        audio.playsInline = true;
 
         e("remoteAudio")
           .appendChild(
@@ -1845,8 +1966,24 @@ async function createPeer(
         );
       }
 
-      audio.srcObject =
-        event.streams[0];
+      if(
+        event.streams &&
+        event.streams[0]
+      ){
+        audio.srcObject =
+          event.streams[0];
+      }else{
+
+        const stream =
+          new MediaStream();
+
+        stream.addTrack(
+          event.track
+        );
+
+        audio.srcObject =
+          stream;
+      }
 
       audio
         .play()
@@ -1866,15 +2003,12 @@ async function createPeer(
           pc.connectionState
         )
       ){
-        closePeer(
-          peerId
-        );
+        closePeer(peerId);
       }
     };
 
-  if(
-    initiator
-  ){
+  if(initiator){
+
     const offer =
       await pc.createOffer();
 
@@ -1886,11 +2020,8 @@ async function createPeer(
     socket.emit(
       "webrtcSignal",
       {
-        code:
-          roomCode,
-
-        target:
-          peerId,
+        code:roomCode,
+        target:peerId,
 
         data:{
           description:
@@ -1903,32 +2034,25 @@ async function createPeer(
   return pc;
 }
 
-function closePeer(
-  peerId
-){
+function closePeer(peerId){
 
   const pc =
-    peers.get(
-      peerId
-    );
+    peers.get(peerId);
 
-  if(
-    pc
-  ){
-    pc.close();
-    peers.delete(
-      peerId
-    );
+  if(pc){
+
+    try{
+      pc.close();
+    }catch(error){}
+
+    peers.delete(peerId);
   }
 
   const audio =
-    audioElements.get(
-      peerId
-    );
+    audioElements.get(peerId);
 
-  if(
-    audio
-  ){
+  if(audio){
+
     audio.remove();
 
     audioElements.delete(
@@ -1937,22 +2061,29 @@ function closePeer(
   }
 }
 
+/*
+  Un jucător nou intră în voice.
+
+  Creăm conexiunea chiar dacă
+  microfonul nostru este OPRIT.
+*/
+
 socket.on(
   "voicePeerAvailable",
   async peer=>{
 
     if(
-      !micEnabled
+      !roomCode ||
+      peer.socketId === socket.id
     ){
       return;
     }
 
     /*
-    Cel nou va primi lista celor
-    existenți și va crea oferta.
-    Noi doar așteptăm oferta lui.
+      Jucătorul nou va iniția de regulă
+      conexiunea. Dacă nu avem peer,
+      așteptăm semnalul lui.
     */
-
   }
 );
 
@@ -1970,23 +2101,14 @@ socket.on(
   "webrtcSignal",
   async payload=>{
 
-    if(
-      !micEnabled
-    ){
-      return;
-    }
-
     const from =
       payload.from;
 
     let pc =
-      peers.get(
-        from
-      );
+      peers.get(from);
 
-    if(
-      !pc
-    ){
+    if(!pc){
+
       pc =
         await createPeer(
           from,
@@ -1999,9 +2121,7 @@ socket.on(
 
     try{
 
-      if(
-        data.description
-      ){
+      if(data.description){
 
         const description =
           new RTCSessionDescription(
@@ -2019,8 +2139,7 @@ socket.on(
         ){
 
           const answer =
-            await pc
-              .createAnswer();
+            await pc.createAnswer();
 
           await pc
             .setLocalDescription(
@@ -2030,11 +2149,8 @@ socket.on(
           socket.emit(
             "webrtcSignal",
             {
-              code:
-                roomCode,
-
-              target:
-                from,
+              code:roomCode,
+              target:from,
 
               data:{
                 description:
@@ -2045,9 +2161,7 @@ socket.on(
         }
       }
 
-      if(
-        data.candidate
-      ){
+      if(data.candidate){
 
         await pc
           .addIceCandidate(
@@ -2067,15 +2181,11 @@ socket.on(
   }
 );
 
-/* =========================
-   SPEAKING DETECTOR
-========================= */
+/* SPEAKING DETECTOR */
 
 function startSpeakingDetector(){
 
-  if(
-    !localStream
-  ){
+  if(!localStream){
     return;
   }
 
@@ -2127,6 +2237,7 @@ function startSpeakingDetector(){
       const value
       of buffer
     ){
+
       const normalized =
         (
           value - 128
@@ -2150,15 +2261,14 @@ function startSpeakingDetector(){
       speaking !==
       lastSpeaking
     ){
+
       lastSpeaking =
         speaking;
 
       socket.emit(
         "voiceSpeaking",
         {
-          code:
-            roomCode,
-
+          code:roomCode,
           speaking
         }
       );
@@ -2175,35 +2285,36 @@ function startSpeakingDetector(){
 
 function stopSpeakingDetector(){
 
-  if(
-    speakingLoop
-  ){
+  if(speakingLoop){
+
     cancelAnimationFrame(
       speakingLoop
     );
   }
 
-  speakingLoop =
-    null;
+  speakingLoop = null;
 
-  if(
-    audioContext
-  ){
+  if(audioContext){
+
     audioContext
       .close()
-      .catch(
-        ()=>{}
-      );
+      .catch(()=>{});
   }
 
-  audioContext =
-    null;
+  audioContext = null;
+  analyser = null;
+  lastSpeaking = false;
 
-  analyser =
-    null;
+  if(roomCode){
 
-  lastSpeaking =
-    false;
+    socket.emit(
+      "voiceSpeaking",
+      {
+        code:roomCode,
+        speaking:false
+      }
+    );
+  }
 }
 
 socket.on(
@@ -2216,6 +2327,7 @@ socket.on(
         data.seat
       ]
     ){
+
       state.players[
         data.seat
       ].speaking =
@@ -2227,9 +2339,8 @@ socket.on(
         `.p${data.seat}`
       );
 
-    if(
-      player
-    ){
+    if(player){
+
       player.classList.toggle(
         "speaking",
         data.speaking
@@ -2240,35 +2351,25 @@ socket.on(
           ".voiceBadge"
         );
 
-      if(
-        badge &&
-        state?.players[
-          data.seat
-        ]?.voiceEnabled
-      ){
+      if(badge){
+
         badge.textContent =
           data.speaking
             ? "🔊 Vorbește"
-            : "🎤";
+            : "🔊 Ascultă";
       }
     }
   }
 );
 
-/* =========================
-   EMOJI
-========================= */
+/* EMOJI */
 
-function sendEmoji(
-  emoji
-){
+function sendEmoji(emoji){
 
   socket.emit(
     "sendEmoji",
     {
-      code:
-        roomCode,
-
+      code:roomCode,
       emoji
     }
   );
@@ -2320,18 +2421,12 @@ socket.on(
   }
 );
 
-/* =========================
-   KICK
-========================= */
+/* KICK */
 
-function kickPlayer(
-  seat
-){
+function kickPlayer(seat){
 
   const player =
-    state.players[
-      seat
-    ];
+    state.players[seat];
 
   if(
     !player ||
@@ -2345,17 +2440,13 @@ function kickPlayer(
   socket.emit(
     "kickPlayer",
     {
-      code:
-        roomCode,
-
+      code:roomCode,
       seat
     },
     response=>{
 
       if(!response.ok){
-        alert(
-          response.error
-        );
+        alert(response.error);
       }
     }
   );
@@ -2365,7 +2456,16 @@ socket.on(
   "kicked",
   ()=>{
 
-    stopMicrophone();
+    if(localStream){
+
+      localStream
+        .getTracks()
+        .forEach(
+          track=>track.stop()
+        );
+    }
+
+    closeAllPeers();
 
     alert(
       "Host-ul te-a dat afară."
@@ -2375,9 +2475,7 @@ socket.on(
   }
 );
 
-/* =========================
-   CHAT
-========================= */
+/* CHAT */
 
 e("chatForm")
   .addEventListener(
@@ -2398,9 +2496,7 @@ e("chatForm")
       socket.emit(
         "chatMessage",
         {
-          code:
-            roomCode,
-
+          code:roomCode,
           text
         },
         response=>{
@@ -2409,6 +2505,7 @@ e("chatForm")
             response &&
             !response.ok
           ){
+
             alert(
               response.error
             );
@@ -2416,8 +2513,7 @@ e("chatForm")
             return;
           }
 
-          e("chatInput")
-            .value =
+          e("chatInput").value =
             "";
         }
       );
@@ -2440,9 +2536,7 @@ socket.on(
       `<span class="chatName">${escapeHTML(message.name)}:</span> ${escapeHTML(message.text)}`;
 
     e("chatMessages")
-      .appendChild(
-        box
-      );
+      .appendChild(box);
 
     e("chatMessages")
       .scrollTop =
@@ -2451,15 +2545,12 @@ socket.on(
   }
 );
 
-/* =========================
-   TABS
-========================= */
+/* TABS */
 
 function showTab(tab){
 
   const chat =
-    tab ===
-    "chat";
+    tab === "chat";
 
   e("chatPage")
     .classList
@@ -2490,9 +2581,7 @@ function showTab(tab){
     );
 }
 
-/* =========================
-   STATE
-========================= */
+/* STATE */
 
 socket.on(
   "state",
@@ -2505,6 +2594,7 @@ socket.on(
       lastGameId !==
       state.gameId
     ){
+
       lastGameId =
         state.gameId;
 
@@ -2517,6 +2607,7 @@ socket.on(
     }
 
     render();
+    updateTurnTimer();
   }
 );
 
@@ -2531,9 +2622,7 @@ socket.on(
   }
 );
 
-/* =========================
-   CARDS
-========================= */
+/* CARDS */
 
 function red(card){
 
@@ -2564,9 +2653,7 @@ function cardHTML(card){
   `;
 }
 
-/* =========================
-   HISTORY
-========================= */
+/* HISTORY */
 
 function renderHistory(){
 
@@ -2583,6 +2670,7 @@ function renderHistory(){
   if(
     history.length === 0
   ){
+
     box.innerHTML =
       "Nu există încă istoric.";
 
@@ -2628,7 +2716,7 @@ function renderHistory(){
             </div>
 
             <div class="historyCards">
-              ${item.reasons.map(escapeHTML).join("<br>")}
+              ${(item.reasons || []).map(escapeHTML).join("<br>")}
             </div>
 
           `;
@@ -2636,7 +2724,7 @@ function renderHistory(){
         }else{
 
           const cards =
-            item.cards
+            (item.cards || [])
               .map(
                 card=>
                   `${escapeHTML(card.name)}: ${card.rank}${card.suit}${card.cut ? " ✂️" : ""}`
@@ -2680,9 +2768,7 @@ function renderHistory(){
     );
 }
 
-/* =========================
-   RENDER
-========================= */
+/* RENDER */
 
 function render(){
 
@@ -2692,43 +2778,61 @@ function render(){
 
   e("matchScore1")
     .textContent =
-    state.matchScore1 ??
-    0;
+    state.matchScore1 ?? 0;
 
   e("matchScore2")
     .textContent =
-    state.matchScore2 ??
-    0;
+    state.matchScore2 ?? 0;
 
   e("points1")
     .textContent =
-    state.cardPoints1 ??
-    0;
+    state.cardPoints1 ?? 0;
 
   e("points2")
     .textContent =
-    state.cardPoints2 ??
-    0;
+    state.cardPoints2 ?? 0;
 
   e("piles1")
     .textContent =
-    state.piles1 ??
-    0;
+    state.piles1 ?? 0;
 
   e("piles2")
     .textContent =
-    state.piles2 ??
-    0;
+    state.piles2 ?? 0;
 
   e("roundNumber")
     .textContent =
-    state.roundNumber ??
-    1;
+    state.roundNumber ?? 1;
 
   e("status")
     .textContent =
-    state.message ||
-    "";
+    state.message || "";
+
+  /*
+    Dealer / cine face cărțile
+  */
+
+  if(
+    Number.isInteger(
+      state.dealerSeat
+    ) &&
+    state.players[
+      state.dealerSeat
+    ]
+  ){
+
+    e("dealerName")
+      .textContent =
+      state.players[
+        state.dealerSeat
+      ].name;
+
+  }else{
+
+    e("dealerName")
+      .textContent =
+      "-";
+  }
 
   const host =
     socket.id ===
@@ -2748,7 +2852,7 @@ function render(){
   const team1Count =
     [0,2,4]
       .filter(
-        seat =>
+        seat=>
           state.players[seat]
       )
       .length;
@@ -2756,7 +2860,7 @@ function render(){
   const team2Count =
     [1,3,5]
       .filter(
-        seat =>
+        seat=>
           state.players[seat]
       )
       .length;
@@ -2805,24 +2909,21 @@ function render(){
       !state.started
     );
 
-  if(
-    state.lastResult
-  ){
+  if(state.lastResult){
+
     e("lastResult")
       .classList
-      .remove(
-        "hidden"
-      );
+      .remove("hidden");
 
     e("lastResult")
       .textContent =
       state.lastResult;
+
   }else{
+
     e("lastResult")
       .classList
-      .add(
-        "hidden"
-      );
+      .add("hidden");
   }
 
   e("decisionControls")
@@ -2836,9 +2937,7 @@ function render(){
       )
     );
 
-  if(
-    state.awaitingDecision
-  ){
+  if(state.awaitingDecision){
 
     const opener =
       state.players[
@@ -2848,13 +2947,12 @@ function render(){
     e("turnMessage")
       .textContent =
       state.opener === mySeat
-        ? "Alegi: continui sau oprești runda?"
+        ? "Alegi: continui sau oprești runda? Ai 20 secunde."
         : `${opener?.name || "Jucătorul"} decide.`;
+
   }
 
-  else if(
-    state.started
-  ){
+  else if(state.started){
 
     const current =
       state.players[
@@ -2866,10 +2964,11 @@ function render(){
       state.turn === mySeat
         ? (
             state.continuationMode
-              ? `🟢 Alege ${state.openingRank}, 7 sau 8`
-              : "🟢 Rândul tău"
+              ? `🟢 Alege ${state.openingRank}, 7 sau 8 • ai 20 secunde`
+              : "🟢 Rândul tău • ai 20 secunde"
           )
         : `Rândul lui ${current?.name || "jucător"}`;
+
   }
 
   else{
@@ -2894,9 +2993,7 @@ function render(){
   ){
 
     const player =
-      state.players[
-        index
-      ];
+      state.players[index];
 
     const box =
       document.createElement(
@@ -2926,28 +3023,35 @@ function render(){
 
       `;
 
-      players.appendChild(
-        box
-      );
+      players.appendChild(box);
 
       continue;
     }
 
     if(
       state.started &&
-      state.turn ===
-        index
+      state.turn === index
     ){
+
       box.classList.add(
         "active"
       );
     }
 
-    if(
-      player.speaking
-    ){
+    if(player.speaking){
+
       box.classList.add(
         "speaking"
+      );
+    }
+
+    if(
+      state.dealerSeat ===
+      index
+    ){
+
+      box.classList.add(
+        "dealer"
       );
     }
 
@@ -2956,9 +3060,9 @@ function render(){
     if(
       host &&
       !state.started &&
-      index !==
-        mySeat
+      index !== mySeat
     ){
+
       kick = `
 
         <button
@@ -2970,6 +3074,15 @@ function render(){
 
       `;
     }
+
+    const dealerBadge =
+      state.dealerSeat === index
+        ? `
+          <div class="dealerBadge">
+            🃏 Face cărțile
+          </div>
+        `
+        : "";
 
     box.innerHTML = `
 
@@ -3010,18 +3123,21 @@ function render(){
           ? `
             <div class="voiceBadge">
               ${
-                player.voiceEnabled
-                  ? (
-                      player.speaking
-                        ? "🔊 Vorbește"
-                        : "🎤"
+                player.speaking
+                  ? "🔊 Vorbește"
+                  : (
+                      index === mySeat &&
+                      micEnabled
+                        ? "🎤 Microfon pornit"
+                        : "🔊 Ascultă"
                     )
-                  : "🔇"
               }
             </div>
           `
           : ""
       }
+
+      ${dealerBadge}
 
       ${kick}
 
@@ -3035,8 +3151,7 @@ function render(){
   /* TABLE */
 
   const table =
-    state.table ||
-    [];
+    state.table || [];
 
   const center =
     e("centerCards");
@@ -3055,11 +3170,8 @@ function render(){
       card.className =
         "card";
 
-      if(
-        red(
-          play.card
-        )
-      ){
+      if(red(play.card)){
+
         card.classList.add(
           "red"
         );
@@ -3076,9 +3188,8 @@ function render(){
     }
   );
 
-  if(
-    state.openingRank
-  ){
+  if(state.openingRank){
+
     e("firstCard")
       .textContent =
       state.openingRank;
@@ -3086,7 +3197,9 @@ function render(){
     e("cuts")
       .textContent =
       `${state.openingRank}, 7 sau 8`;
+
   }else{
+
     e("firstCard")
       .textContent =
       "-";
@@ -3105,10 +3218,7 @@ function render(){
     "";
 
   hand.forEach(
-    (
-      card,
-      index
-    )=>{
+    (card,index)=>{
 
       const element =
         document.createElement(
@@ -3118,9 +3228,8 @@ function render(){
       element.className =
         "card";
 
-      if(
-        red(card)
-      ){
+      if(red(card)){
+
         element.classList.add(
           "red"
         );
@@ -3128,15 +3237,14 @@ function render(){
 
       let canPlay =
         state.started &&
-        state.turn ===
-          mySeat &&
+        state.turn === mySeat &&
         !state.awaitingDecision;
 
       if(
         state.continuationMode &&
-        state.turn ===
-          mySeat
+        state.turn === mySeat
       ){
+
         canPlay =
           card.rank === "7" ||
           card.rank === "8" ||
@@ -3145,25 +3253,23 @@ function render(){
       }
 
       if(canPlay){
+
         element.classList.add(
           "canPlay"
         );
 
         element.onclick =
-          ()=>
-            playCard(
-              index
-            );
+          ()=>playCard(index);
+
       }else{
+
         element.classList.add(
           "disabled"
         );
       }
 
       element.innerHTML =
-        cardHTML(
-          card
-        );
+        cardHTML(card);
 
       handBox.appendChild(
         element
@@ -3172,11 +3278,10 @@ function render(){
   );
 
   renderHistory();
+  updateTurnTimer();
 }
 
-/* =========================
-   HELPERS
-========================= */
+/* HELPERS */
 
 function escapeHTML(value){
 
